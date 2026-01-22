@@ -9,6 +9,7 @@ import {
     Dimensions,
     FlatList,
     Image,
+    Modal,
     NativeScrollEvent,
     NativeSyntheticEvent,
     ScrollView,
@@ -31,7 +32,7 @@ const getDealById = (id: string) => ({
   id: parseInt(id) || 1,
   title: "Gourmet Burger Combo",
   subtitle: "Premium dining experience with signature burgers",
-  labels: ["Recently Expiring", "Deal of the Day"],
+  labels: ["Recently Expiring"],
   merchant: {
     name: "Urban Bites Kitchen",
     location: "Colombo 03, Near Dutch Hospital",
@@ -90,6 +91,11 @@ export default function DealDetailScreen() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const carouselRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Confirmation modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const confirmModalAnim = useRef(new Animated.Value(0)).current;
+  const confirmSlideAnim = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
     // Entry animations
@@ -190,8 +196,56 @@ export default function DealDetailScreen() {
         duration: 100,
         useNativeDriver: true,
       }),
+    ]).start(() => {
+      openConfirmModal();
+    });
+  };
+
+  const openConfirmModal = () => {
+    setShowConfirmModal(true);
+    Animated.parallel([
+      Animated.timing(confirmModalAnim, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.spring(confirmSlideAnim, {
+        toValue: 0,
+        tension: 65,
+        friction: 10,
+        useNativeDriver: true,
+      }),
     ]).start();
-    // Handle purchase logic
+  };
+
+  const closeConfirmModal = () => {
+    Animated.parallel([
+      Animated.timing(confirmModalAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(confirmSlideAnim, {
+        toValue: 300,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowConfirmModal(false);
+    });
+  };
+
+  const handleConfirmPurchase = () => {
+    closeConfirmModal();
+    // Generate coupon code
+    const couponCode = `QPON-${Date.now().toString(36).toUpperCase().slice(-4)}-${Math.random().toString(36).toUpperCase().slice(-4)}`;
+    // Navigate to success page
+    setTimeout(() => {
+      router.push({
+        pathname: "/coupon-success/[id]",
+        params: { id: deal.id.toString(), couponCode },
+      });
+    }, 300);
   };
 
   const formatPrice = (price: number) => {
@@ -313,47 +367,40 @@ export default function DealDetailScreen() {
                 {deal.discountPercent}% OFF
               </Text>
             </View>
-          </View>
 
-          {/* Main Content Card */}
-          <View style={styles.mainCard}>
             {/* Labels */}
             {deal.labels && deal.labels.length > 0 && (
-              <View style={styles.labelsContainer}>
+              <View style={styles.carouselLabels}>
                 {deal.labels.map((label, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      styles.labelBadge,
-                      index === 0 && styles.labelBadgePrimary,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.labelText,
-                        index === 0 && styles.labelTextPrimary,
-                      ]}
-                    >
-                      {label}
-                    </Text>
+                  <View key={index} style={styles.carouselLabelBadge}>
+                    <Text style={styles.carouselLabelText}>{label}</Text>
                   </View>
                 ))}
               </View>
             )}
+          </View>
 
-            {/* Title Section */}
+          {/* Main Content Card */}
+          <View style={styles.mainCard}>
+            {/* Title & Subtitle Section */}
             <View style={styles.titleSection}>
               <Text style={styles.dealTitle}>{deal.title}</Text>
+              <Text style={styles.dealSubtitle}>{deal.subtitle}</Text>
             </View>
 
-            {/* Merchant Info - Minimal */}
-            <View style={styles.merchantRow}>
-              <Feather name="map-pin" size={14} color={Colors.gray500} />
+            {/* Merchant & Category */}
+            <TouchableOpacity
+              style={styles.merchantCategoryRow}
+              onPress={() => router.push(`/merchant/${deal.id}`)}
+              activeOpacity={0.7}
+            >
+              <Feather name="map-pin" size={12} color={Colors.gray500} />
               <Text style={styles.merchantText}>{deal.merchant.name}</Text>
-              <View style={styles.ratingDot} />
-              <Feather name="star" size={12} color="#FFB800" />
-              <Text style={styles.ratingText}>{deal.merchant.rating}</Text>
-            </View>
+              <Feather name="chevron-right" size={14} color={Colors.gray400} />
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryText}>{deal.category}</Text>
+              </View>
+            </TouchableOpacity>
 
             {/* Price Section */}
             <View style={styles.priceSection}>
@@ -481,6 +528,128 @@ export default function DealDetailScreen() {
           </TouchableOpacity>
         </Animated.View>
       </View>
+
+      {/* Confirmation Modal */}
+      <Modal
+        visible={showConfirmModal}
+        transparent
+        animationType="none"
+        onRequestClose={closeConfirmModal}
+      >
+        <Animated.View
+          style={[styles.modalOverlay, { opacity: confirmModalAnim }]}
+        >
+          <TouchableOpacity
+            style={StyleSheet.absoluteFillObject}
+            activeOpacity={1}
+            onPress={closeConfirmModal}
+          />
+          <Animated.View
+            style={[
+              styles.confirmModal,
+              {
+                transform: [{ translateY: confirmSlideAnim }],
+                paddingBottom: Math.max(34, insets.bottom + 20),
+              },
+            ]}
+          >
+            {/* Modal Header */}
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>Confirm Your Purchase</Text>
+            <Text style={styles.modalSubtitle}>
+              You're about to claim this coupon
+            </Text>
+
+            {/* Deal Summary */}
+            <View style={styles.modalDealCard}>
+              <View style={styles.modalDealHeader}>
+                <View style={styles.modalDiscountBadge}>
+                  <Text style={styles.modalDiscountText}>
+                    {deal.discountPercent}% OFF
+                  </Text>
+                </View>
+                <Text style={styles.modalDealTitle}>{deal.title}</Text>
+              </View>
+
+              <View style={styles.modalDealRow}>
+                <Feather name="map-pin" size={14} color={Colors.gray500} />
+                <Text style={styles.modalDealMerchant}>
+                  {deal.merchant.name}
+                </Text>
+              </View>
+
+              <View style={styles.modalDivider} />
+
+              <View style={styles.modalPriceRow}>
+                <View>
+                  <Text style={styles.modalPriceLabel}>You Pay</Text>
+                  <Text style={styles.modalPrice}>
+                    {deal.currency} {formatPrice(deal.discountedPrice)}
+                  </Text>
+                </View>
+                <View style={styles.modalSavings}>
+                  <Feather name="tag" size={14} color="#2E8B57" />
+                  <Text style={styles.modalSavingsText}>
+                    Save {deal.currency}{" "}
+                    {formatPrice(deal.originalPrice - deal.discountedPrice)}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Validity Info */}
+            <View style={styles.modalValidityRow}>
+              <View style={styles.modalValidityItem}>
+                <Feather name="clock" size={16} color={Colors.orange} />
+                <Text style={styles.modalValidityText}>
+                  {deal.validTimeStart} – {deal.validTimeEnd}
+                </Text>
+              </View>
+              <View style={styles.modalValidityItem}>
+                <Feather name="calendar" size={16} color={Colors.orange} />
+                <Text style={styles.modalValidityText}>
+                  Expires {formatDate(deal.expirationDate)}
+                </Text>
+              </View>
+            </View>
+
+            {/* Terms Note */}
+            <View style={styles.modalNote}>
+              <Feather name="info" size={14} color={Colors.gray500} />
+              <Text style={styles.modalNoteText}>
+                By confirming, you agree to the terms and conditions of this
+                deal.
+              </Text>
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={closeConfirmModal}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
+                onPress={handleConfirmPurchase}
+                activeOpacity={0.9}
+              >
+                <LinearGradient
+                  colors={[Colors.orange, Colors.orangeLight]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.modalConfirmGradient}
+                >
+                  <Feather name="check-circle" size={18} color={Colors.white} />
+                  <Text style={styles.modalConfirmText}>Confirm</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -606,6 +775,29 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
   },
+  carouselLabels: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    flexDirection: "row",
+    gap: 8,
+  },
+  carouselLabelBadge: {
+    backgroundColor: Colors.white,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  carouselLabelText: {
+    color: Colors.deepNavy,
+    fontSize: 12,
+    fontFamily: Fonts.body.semiBold,
+  },
   labelsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -630,33 +822,41 @@ const styles = StyleSheet.create({
     color: Colors.orange,
   },
   titleSection: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   dealTitle: {
     color: Colors.deepNavy,
     fontSize: 20,
     fontFamily: Fonts.heading.bold,
+    marginBottom: 4,
   },
-  merchantRow: {
+  dealSubtitle: {
+    color: Colors.gray600,
+    fontSize: 13,
+    fontFamily: Fonts.body.regular,
+    lineHeight: 18,
+  },
+  merchantCategoryRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   merchantText: {
-    color: Colors.gray500,
+    color: Colors.gray600,
     fontSize: 13,
     fontFamily: Fonts.body.medium,
+    marginRight: 4,
   },
-  ratingDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: Colors.gray400,
+  categoryBadge: {
+    backgroundColor: "rgba(255,90,0,0.1)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  ratingText: {
-    color: Colors.gray600,
-    fontSize: 12,
+  categoryText: {
+    color: Colors.orange,
+    fontSize: 11,
     fontFamily: Fonts.body.semiBold,
   },
   priceSection: {
@@ -874,5 +1074,189 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 16,
     fontFamily: "Manrope_700Bold",
+  },
+  // Confirmation Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  confirmModal: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 15,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.gray300,
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontFamily: Fonts.heading.bold,
+    fontSize: 22,
+    color: Colors.deepNavy,
+    textAlign: "center",
+    marginBottom: 6,
+  },
+  modalSubtitle: {
+    fontFamily: Fonts.body.regular,
+    fontSize: 14,
+    color: Colors.gray500,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  modalDealCard: {
+    backgroundColor: Colors.gray100,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  modalDealHeader: {
+    marginBottom: 10,
+  },
+  modalDiscountBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: Colors.orange,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  modalDiscountText: {
+    fontFamily: Fonts.body.bold,
+    fontSize: 11,
+    color: Colors.white,
+  },
+  modalDealTitle: {
+    fontFamily: Fonts.heading.semiBold,
+    fontSize: 17,
+    color: Colors.deepNavy,
+  },
+  modalDealRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 12,
+  },
+  modalDealMerchant: {
+    fontFamily: Fonts.body.medium,
+    fontSize: 13,
+    color: Colors.gray500,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: Colors.gray200,
+    marginBottom: 12,
+  },
+  modalPriceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  modalPriceLabel: {
+    fontFamily: Fonts.body.medium,
+    fontSize: 12,
+    color: Colors.gray500,
+    marginBottom: 2,
+  },
+  modalPrice: {
+    fontFamily: Fonts.heading.bold,
+    fontSize: 22,
+    color: Colors.orange,
+  },
+  modalSavings: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(52,199,89,0.12)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  modalSavingsText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 13,
+    color: "#2E8B57",
+  },
+  modalValidityRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 16,
+  },
+  modalValidityItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: Colors.gray100,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  modalValidityText: {
+    fontFamily: Fonts.body.medium,
+    fontSize: 13,
+    color: Colors.gray600,
+  },
+  modalNote: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: "rgba(255,90,0,0.06)",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  modalNoteText: {
+    flex: 1,
+    fontFamily: Fonts.body.regular,
+    fontSize: 12,
+    color: Colors.gray600,
+    lineHeight: 18,
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 25,
+    borderWidth: 1.5,
+    borderColor: Colors.gray300,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCancelText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 15,
+    color: Colors.gray600,
+  },
+  modalConfirmButton: {
+    flex: 1,
+    borderRadius: 25,
+    overflow: "hidden",
+  },
+  modalConfirmGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    gap: 8,
+  },
+  modalConfirmText: {
+    fontFamily: Fonts.body.bold,
+    fontSize: 15,
+    color: Colors.white,
   },
 });

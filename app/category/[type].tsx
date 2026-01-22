@@ -438,7 +438,10 @@ const CategoryScreen = () => {
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.9}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => router.push(`/merchant/${item.id}`)}
+      >
         <View style={styles.merchantCoverContainer}>
           <Image
             source={{ uri: item.coverImage }}

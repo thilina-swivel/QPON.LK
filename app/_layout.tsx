@@ -40,6 +40,11 @@ export default function RootLayout() {
           <Stack.Screen name="favorites" options={{ headerShown: false }} />
           <Stack.Screen name="deal/[id]" options={{ headerShown: false }} />
           <Stack.Screen
+            name="coupon-success/[id]"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="merchant/[id]" options={{ headerShown: false }} />
+          <Stack.Screen
             name="modal"
             options={{ presentation: "modal", title: "Modal" }}
           />

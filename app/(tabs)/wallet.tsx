@@ -12,6 +12,7 @@ import {
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -122,6 +123,8 @@ const expiringSoonCoupons: CouponItem[] = [
 ];
 
 const WalletScreen = () => {
+  const router = useRouter();
+
   const [quicksandLoaded] = useQuicksandFonts({
     Quicksand_600SemiBold,
     Quicksand_700Bold,
@@ -271,6 +274,7 @@ const WalletScreen = () => {
           </View>
           <TouchableOpacity
             style={styles.notificationButton}
+            onPress={() => router.push("/notifications")}
             activeOpacity={0.7}
           >
             <Feather name="bell" size={22} color={Colors.deepNavy} />
