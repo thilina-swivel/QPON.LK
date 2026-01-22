@@ -1,21 +1,26 @@
+import { Colors, Fonts } from "@/constants/theme";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Dimensions,
     FlatList,
+    Image,
     NativeScrollEvent,
     NativeSyntheticEvent,
     ScrollView,
-    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useFavorites } from "../../context/FavoritesContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -26,6 +31,7 @@ const getDealById = (id: string) => ({
   id: parseInt(id) || 1,
   title: "Gourmet Burger Combo",
   subtitle: "Premium dining experience with signature burgers",
+  labels: ["Recently Expiring", "Deal of the Day"],
   merchant: {
     name: "Urban Bites Kitchen",
     location: "Colombo 03, Near Dutch Hospital",
@@ -33,9 +39,9 @@ const getDealById = (id: string) => ({
     reviewCount: 256,
   },
   images: [
-    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
-    "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800",
-    "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800",
+    "https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&w=800&h=600",
+    "https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=800&h=600",
+    "https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=800&h=600",
   ],
   originalPrice: 2500,
   discountedPrice: 1875,
@@ -206,63 +212,58 @@ export default function DealDetailScreen() {
   const renderImageItem = ({ item }: { item: string }) => (
     <View style={styles.imageContainer}>
       <LinearGradient
-        colors={["#1a1a3e", "#2d2d5a"]}
+        colors={[Colors.deepNavyLight, Colors.deepNavy]}
         style={styles.imagePlaceholder}
       >
-        <Feather name="image" size={48} color="rgba(255,255,255,0.3)" />
+        <Image
+          source={{ uri: item }}
+          style={styles.carouselImage}
+          resizeMode="cover"
+          defaultSource
+        />
       </LinearGradient>
       <LinearGradient
-        colors={["transparent", "rgba(0,0,0,0.7)"]}
+        colors={["transparent", "rgba(0,0,0,0.3)"]}
         style={styles.imageOverlay}
       />
     </View>
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar style="dark" />
 
-      {/* Fixed Header */}
+      {/* Header */}
       <Animated.View
         style={[
-          styles.fixedHeader,
-          { paddingTop: insets.top, opacity: headerOpacity },
-        ]}
-      >
-        <Text style={styles.fixedHeaderTitle} numberOfLines={1}>
-          {deal.title}
-        </Text>
-      </Animated.View>
-
-      {/* Back Button */}
-      <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 10 }]}
-        onPress={() => router.back()}
-        activeOpacity={0.8}
-      >
-        <View style={styles.backButtonInner}>
-          <Feather name="arrow-left" size={20} color="#fff" />
-        </View>
-      </TouchableOpacity>
-
-      {/* Favorite Button */}
-      <Animated.View
-        style={[
-          styles.favoriteButton,
-          { top: insets.top + 10, transform: [{ scale: heartScale }] },
+          styles.header,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
         ]}
       >
         <TouchableOpacity
-          onPress={handleFavoritePress}
-          activeOpacity={0.8}
-          style={styles.favoriteButtonInner}
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
         >
-          {isFav ? (
-            <Ionicons name="heart" size={22} color="#FF6B35" />
-          ) : (
-            <Feather name="heart" size={20} color="#fff" />
-          )}
+          <Feather name="arrow-left" size={24} color={Colors.deepNavy} />
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>Deal Details</Text>
+        <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={handleFavoritePress}
+            activeOpacity={0.7}
+          >
+            {isFav ? (
+              <Ionicons name="heart" size={24} color={Colors.orange} />
+            ) : (
+              <Feather name="heart" size={24} color={Colors.deepNavy} />
+            )}
+          </TouchableOpacity>
+        </Animated.View>
       </Animated.View>
 
       <ScrollView
@@ -316,28 +317,43 @@ export default function DealDetailScreen() {
 
           {/* Main Content Card */}
           <View style={styles.mainCard}>
+            {/* Labels */}
+            {deal.labels && deal.labels.length > 0 && (
+              <View style={styles.labelsContainer}>
+                {deal.labels.map((label, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.labelBadge,
+                      index === 0 && styles.labelBadgePrimary,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.labelText,
+                        index === 0 && styles.labelTextPrimary,
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
             {/* Title Section */}
             <View style={styles.titleSection}>
               <Text style={styles.dealTitle}>{deal.title}</Text>
-              <Text style={styles.dealSubtitle}>{deal.subtitle}</Text>
             </View>
 
-            {/* Merchant Info */}
-            <TouchableOpacity style={styles.merchantCard} activeOpacity={0.7}>
-              <View style={styles.merchantIcon}>
-                <Feather name="map-pin" size={18} color="#FF6B35" />
-              </View>
-              <View style={styles.merchantInfo}>
-                <Text style={styles.merchantName}>{deal.merchant.name}</Text>
-                <Text style={styles.merchantLocation}>
-                  {deal.merchant.location}
-                </Text>
-              </View>
-              <View style={styles.ratingBadge}>
-                <Feather name="star" size={12} color="#FFD700" />
-                <Text style={styles.ratingText}>{deal.merchant.rating}</Text>
-              </View>
-            </TouchableOpacity>
+            {/* Merchant Info - Minimal */}
+            <View style={styles.merchantRow}>
+              <Feather name="map-pin" size={14} color={Colors.gray500} />
+              <Text style={styles.merchantText}>{deal.merchant.name}</Text>
+              <View style={styles.ratingDot} />
+              <Feather name="star" size={12} color="#FFB800" />
+              <Text style={styles.ratingText}>{deal.merchant.rating}</Text>
+            </View>
 
             {/* Price Section */}
             <View style={styles.priceSection}>
@@ -392,59 +408,27 @@ export default function DealDetailScreen() {
               </Text>
             </View>
 
-            {/* Validity Section */}
-            <View style={styles.validitySection}>
-              <View style={styles.validityItem}>
-                <View style={styles.validityIcon}>
-                  <Feather name="calendar" size={16} color="#FF6B35" />
-                </View>
-                <View>
-                  <Text style={styles.validityLabel}>Expires</Text>
-                  <Text style={styles.validityValue}>
-                    {formatDate(deal.expirationDate)}
-                  </Text>
-                </View>
+            {/* Validity Section - Minimal */}
+            <View style={styles.validityRow}>
+              <View style={styles.validityChip}>
+                <Feather name="calendar" size={14} color={Colors.orange} />
+                <Text style={styles.validityChipText}>
+                  Expires {formatDate(deal.expirationDate)}
+                </Text>
               </View>
-              <View style={styles.validityItem}>
-                <View style={styles.validityIcon}>
-                  <Feather name="clock" size={16} color="#FF6B35" />
-                </View>
-                <View>
-                  <Text style={styles.validityLabel}>Valid Time</Text>
-                  <Text style={styles.validityValue}>
-                    {deal.validTimeStart} – {deal.validTimeEnd}
-                  </Text>
-                </View>
+              <View style={styles.validityChip}>
+                <Feather name="clock" size={14} color={Colors.orange} />
+                <Text style={styles.validityChipText}>
+                  {deal.validTimeStart} – {deal.validTimeEnd}
+                </Text>
               </View>
-            </View>
-
-            {/* Valid Days */}
-            <View style={styles.validDays}>
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                <View
-                  key={day}
-                  style={[
-                    styles.dayBadge,
-                    deal.validDays.includes(day) && styles.dayBadgeActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.dayText,
-                      deal.validDays.includes(day) && styles.dayTextActive,
-                    ]}
-                  >
-                    {day}
-                  </Text>
-                </View>
-              ))}
             </View>
           </View>
 
           {/* Description Card */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
-              <Feather name="file-text" size={18} color="#FF6B35" />
+              <Feather name="file-text" size={18} color={Colors.orange} />
               <Text style={styles.sectionTitle}>About This Deal</Text>
             </View>
             <Text style={styles.descriptionText}>{deal.description}</Text>
@@ -453,7 +437,7 @@ export default function DealDetailScreen() {
           {/* Terms & Conditions Card */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
-              <Feather name="info" size={18} color="#FF6B35" />
+              <Feather name="info" size={18} color={Colors.orange} />
               <Text style={styles.sectionTitle}>Terms & Conditions</Text>
             </View>
             {deal.termsAndConditions.map((term, index) => (
@@ -486,75 +470,64 @@ export default function DealDetailScreen() {
             activeOpacity={0.9}
           >
             <LinearGradient
-              colors={["#FF6B35", "#FF8B5A"]}
+              colors={[Colors.orange, Colors.orangeLight]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.buyButtonGradient}
             >
               <Text style={styles.buyButtonText}>Get Coupon</Text>
-              <Feather name="arrow-right" size={18} color="#fff" />
+              <Feather name="arrow-right" size={18} color={Colors.white} />
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0a0a1a",
+    backgroundColor: "#F5F5F8",
   },
-  fixedHeader: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 90,
-    backgroundColor: "rgba(10, 10, 26, 0.95)",
-    zIndex: 100,
-    justifyContent: "flex-end",
-    paddingBottom: 12,
-    paddingHorizontal: 60,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.05)",
-  },
-  fixedHeaderTitle: {
-    color: "#fff",
-    fontSize: 16,
-    fontFamily: "Quicksand_600SemiBold",
-    textAlign: "center",
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
   },
   backButton: {
-    position: "absolute",
-    left: 16,
-    zIndex: 101,
-  },
-  backButtonInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.white,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  headerTitle: {
+    fontFamily: Fonts.heading.bold,
+    fontSize: 20,
+    color: Colors.deepNavy,
   },
   favoriteButton: {
-    position: "absolute",
-    right: 16,
-    zIndex: 101,
-  },
-  favoriteButtonInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.white,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
   scrollView: {
     flex: 1,
@@ -576,12 +549,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  carouselImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+  },
   imageOverlay: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    height: 100,
+    height: 80,
   },
   pagination: {
     position: "absolute",
@@ -599,91 +577,87 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.4)",
   },
   paginationDotActive: {
-    backgroundColor: "#FF6B35",
-    width: 24,
+    backgroundColor: Colors.white,
+    width: 20,
   },
   discountBadge: {
     position: "absolute",
     top: 16,
     right: 16,
-    backgroundColor: "#FF6B35",
+    backgroundColor: Colors.orange,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   discountBadgeText: {
-    color: "#fff",
+    color: Colors.white,
     fontSize: 13,
     fontFamily: "Manrope_700Bold",
   },
   mainCard: {
-    backgroundColor: "rgba(255,255,255,0.03)",
+    backgroundColor: Colors.white,
     marginHorizontal: 16,
     marginTop: -30,
     borderRadius: 20,
     padding: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.05)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  labelsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12,
+  },
+  labelBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: Colors.gray100,
+  },
+  labelBadgePrimary: {
+    backgroundColor: "rgba(255,90,0,0.1)",
+  },
+  labelText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 11,
+    color: Colors.gray600,
+  },
+  labelTextPrimary: {
+    color: Colors.orange,
   },
   titleSection: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   dealTitle: {
-    color: "#fff",
-    fontSize: 22,
-    fontFamily: "Quicksand_700Bold",
-    marginBottom: 6,
+    color: Colors.deepNavy,
+    fontSize: 20,
+    fontFamily: Fonts.heading.bold,
   },
-  dealSubtitle: {
-    color: "rgba(255,255,255,0.6)",
-    fontSize: 14,
-    fontFamily: "Manrope_400Regular",
-    lineHeight: 20,
-  },
-  merchantCard: {
+  merchantRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,107,53,0.08)",
-    padding: 12,
-    borderRadius: 12,
+    gap: 6,
     marginBottom: 16,
   },
-  merchantIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,107,53,0.15)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
+  merchantText: {
+    color: Colors.gray500,
+    fontSize: 13,
+    fontFamily: Fonts.body.medium,
   },
-  merchantInfo: {
-    flex: 1,
-  },
-  merchantName: {
-    color: "#fff",
-    fontSize: 15,
-    fontFamily: "Manrope_600SemiBold",
-    marginBottom: 2,
-  },
-  merchantLocation: {
-    color: "rgba(255,255,255,0.5)",
-    fontSize: 12,
-    fontFamily: "Manrope_400Regular",
-  },
-  ratingBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,215,0,0.15)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    gap: 4,
+  ratingDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: Colors.gray400,
   },
   ratingText: {
-    color: "#FFD700",
+    color: Colors.gray600,
     fontSize: 12,
-    fontFamily: "Manrope_600SemiBold",
+    fontFamily: Fonts.body.semiBold,
   },
   priceSection: {
     flexDirection: "row",
@@ -692,7 +666,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.05)",
+    borderBottomColor: Colors.gray200,
   },
   priceLeft: {
     flexDirection: "row",
@@ -700,24 +674,24 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   originalPrice: {
-    color: "rgba(255,255,255,0.4)",
+    color: Colors.gray400,
     fontSize: 14,
     fontFamily: "Manrope_500Medium",
     textDecorationLine: "line-through",
   },
   discountedPrice: {
-    color: "#FF6B35",
+    color: Colors.orange,
     fontSize: 26,
     fontFamily: "Quicksand_700Bold",
   },
   savingsBadge: {
-    backgroundColor: "rgba(76,217,100,0.15)",
+    backgroundColor: "rgba(52,199,89,0.12)",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
   },
   savingsText: {
-    color: "#4CD964",
+    color: "#2E8B57",
     fontSize: 12,
     fontFamily: "Manrope_600SemiBold",
   },
@@ -732,15 +706,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    color: "#fff",
+    color: Colors.deepNavy,
     fontSize: 20,
     fontFamily: "Quicksand_700Bold",
   },
   remainingValue: {
-    color: "#FF6B35",
+    color: Colors.orange,
   },
   statLabel: {
-    color: "rgba(255,255,255,0.5)",
+    color: Colors.gray500,
     fontSize: 12,
     fontFamily: "Manrope_400Regular",
     marginTop: 2,
@@ -748,91 +722,70 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 30,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: Colors.gray200,
   },
   progressContainer: {
     marginBottom: 16,
   },
   progressBar: {
     height: 6,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: Colors.gray200,
     borderRadius: 3,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#FF6B35",
+    backgroundColor: Colors.orange,
     borderRadius: 3,
   },
   progressText: {
-    color: "rgba(255,255,255,0.5)",
+    color: Colors.gray500,
     fontSize: 11,
     fontFamily: "Manrope_400Regular",
     marginTop: 6,
     textAlign: "right",
   },
-  validitySection: {
+  validityRow: {
     flexDirection: "row",
-    gap: 12,
-    marginBottom: 12,
+    flexWrap: "wrap",
+    gap: 8,
   },
-  validityItem: {
-    flex: 1,
+  validityChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.03)",
-    padding: 12,
-    borderRadius: 12,
-    gap: 10,
-  },
-  validityIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(255,107,53,0.1)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  validityLabel: {
-    color: "rgba(255,255,255,0.5)",
-    fontSize: 11,
-    fontFamily: "Manrope_400Regular",
-  },
-  validityValue: {
-    color: "#fff",
-    fontSize: 13,
-    fontFamily: "Manrope_600SemiBold",
-  },
-  validDays: {
-    flexDirection: "row",
     gap: 6,
-  },
-  dayBadge: {
-    flex: 1,
+    backgroundColor: Colors.gray100,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.03)",
-    alignItems: "center",
+    borderRadius: 20,
+  },
+  validityChipText: {
+    color: Colors.gray600,
+    fontSize: 12,
+    fontFamily: Fonts.body.medium,
   },
   dayBadgeActive: {
-    backgroundColor: "rgba(255,107,53,0.15)",
+    backgroundColor: "rgba(255,90,0,0.12)",
   },
   dayText: {
-    color: "rgba(255,255,255,0.3)",
+    color: Colors.gray400,
     fontSize: 10,
     fontFamily: "Manrope_600SemiBold",
   },
   dayTextActive: {
-    color: "#FF6B35",
+    color: Colors.orange,
   },
   sectionCard: {
-    backgroundColor: "rgba(255,255,255,0.03)",
+    backgroundColor: Colors.white,
     marginHorizontal: 16,
     marginTop: 12,
     borderRadius: 16,
     padding: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.05)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -841,12 +794,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    color: "#fff",
+    color: Colors.deepNavy,
     fontSize: 16,
     fontFamily: "Quicksand_600SemiBold",
   },
   descriptionText: {
-    color: "rgba(255,255,255,0.7)",
+    color: Colors.gray600,
     fontSize: 14,
     fontFamily: "Manrope_400Regular",
     lineHeight: 22,
@@ -861,12 +814,12 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#FF6B35",
+    backgroundColor: Colors.orange,
     marginTop: 7,
   },
   termText: {
     flex: 1,
-    color: "rgba(255,255,255,0.6)",
+    color: Colors.gray600,
     fontSize: 13,
     fontFamily: "Manrope_400Regular",
     lineHeight: 20,
@@ -881,9 +834,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 16,
-    backgroundColor: "rgba(10, 10, 26, 0.95)",
+    backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.05)",
+    borderTopColor: Colors.gray200,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 10,
   },
   ctaLeft: {
     flexDirection: "row",
@@ -891,12 +849,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ctaPrice: {
-    color: "#fff",
+    color: Colors.deepNavy,
     fontSize: 22,
     fontFamily: "Quicksand_700Bold",
   },
   ctaOriginal: {
-    color: "rgba(255,255,255,0.4)",
+    color: Colors.gray400,
     fontSize: 14,
     fontFamily: "Manrope_400Regular",
     textDecorationLine: "line-through",
@@ -913,7 +871,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   buyButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontSize: 16,
     fontFamily: "Manrope_700Bold",
   },
