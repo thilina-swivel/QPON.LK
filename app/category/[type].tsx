@@ -27,6 +27,7 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import FavoriteButton from "../../components/FavoriteButton";
 import { Colors, Fonts } from "../../constants/theme";
 
 const { width } = Dimensions.get("window");
@@ -58,7 +59,7 @@ const categoryData: Record<
 > = {
   cafe: { title: "Cafe", icon: "coffee", color: Colors.deepNavy },
   bar: { title: "Bar", icon: "moon", color: Colors.purple },
-  restaurants: { title: "Restaurants", icon: "grid", color: Colors.teal },
+  restaurants: { title: "Dining", icon: "grid", color: Colors.teal },
   nearby: { title: "Nearby", icon: "map-pin", color: Colors.orange },
 };
 
@@ -350,9 +351,7 @@ const CategoryScreen = () => {
   const merchants = merchantsData[categoryType] || [];
   const deals = dealsData[categoryType] || [];
 
-  const [activeView, setActiveView] = useState<"merchants" | "deals">(
-    "merchants",
-  );
+  const [activeView, setActiveView] = useState<"merchants" | "deals">("deals");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -481,9 +480,17 @@ const CategoryScreen = () => {
       <TouchableOpacity activeOpacity={0.9}>
         <View style={styles.dealImageContainer}>
           <Image source={{ uri: item.image }} style={styles.dealImage} />
-          <TouchableOpacity style={styles.dealFavorite} activeOpacity={0.7}>
-            <Feather name="heart" size={16} color={Colors.gray500} />
-          </TouchableOpacity>
+          <FavoriteButton
+            item={{
+              id: item.id + 300,
+              name: item.name,
+              image: item.image,
+              price: item.price,
+              discount: item.discount,
+            }}
+            size={16}
+            style={styles.dealFavorite}
+          />
           <View style={styles.dealDiscountBadge}>
             <Text style={styles.dealDiscountText}>{item.discount}% OFF</Text>
           </View>

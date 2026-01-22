@@ -1,27 +1,27 @@
 import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-    Quicksand_600SemiBold,
-    Quicksand_700Bold,
-    useFonts as useQuicksandFonts,
+  Quicksand_600SemiBold,
+  Quicksand_700Bold,
+  useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -37,6 +37,7 @@ const categories = [
     icon: "map-pin",
     color: Colors.orange,
     deals: 89,
+    route: "nearby",
   },
   {
     id: 2,
@@ -44,6 +45,7 @@ const categories = [
     icon: "coffee",
     color: Colors.deepNavy,
     deals: 124,
+    route: "cafe",
   },
   {
     id: 3,
@@ -51,13 +53,15 @@ const categories = [
     icon: "moon",
     color: Colors.purple,
     deals: 56,
+    route: "bar",
   },
   {
     id: 4,
-    name: "Restaurants",
+    name: "Dining",
     icon: "grid",
     color: Colors.teal,
     deals: 78,
+    route: "restaurants",
   },
 ];
 
@@ -101,7 +105,7 @@ const ExploreScreen = () => {
   };
 
   const handleCategoryPress = (category: (typeof categories)[0]) => {
-    router.push(`/category/${category.name.toLowerCase()}`);
+    router.push(`/category/${category.route}`);
   };
 
   const renderCategory = (category: (typeof categories)[0], index: number) => (

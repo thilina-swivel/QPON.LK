@@ -27,6 +27,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import FavoriteButton from "../../components/FavoriteButton";
 import { Colors, Fonts } from "../../constants/theme";
 
 const { width } = Dimensions.get("window");
@@ -35,12 +36,10 @@ const SMALL_CARD_WIDTH = (width - 56) / 2;
 
 // Mock Data
 const categories = [
-  { id: 1, name: "Nearby Deals", icon: "map-pin" },
-  { id: 2, name: "Cafe", icon: "coffee" },
-  { id: 3, name: "Bar", icon: "glass" },
-  { id: 4, name: "Restaurants", icon: "utensils" },
-  { id: 5, name: "Spa", icon: "droplet" },
-  { id: 6, name: "Hotels", icon: "home" },
+  { id: 1, name: "Nearby Deals", icon: "map-pin", route: "nearby" },
+  { id: 2, name: "Cafe", icon: "coffee", route: "cafe" },
+  { id: 3, name: "Bar", icon: "glass", route: "bar" },
+  { id: 4, name: "Dining", icon: "utensils", route: "restaurants" },
 ];
 
 const spotlightDeals = [
@@ -50,6 +49,27 @@ const spotlightDeals = [
     subtitle: "Save up to 50% on select fine dining",
     image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800",
     sponsored: true,
+  },
+  {
+    id: 2,
+    title: "Coffee Lovers Paradise",
+    subtitle: "Buy 1 Get 1 Free on all premium coffees",
+    image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800",
+    sponsored: false,
+  },
+  {
+    id: 3,
+    title: "Happy Hour Specials",
+    subtitle: "50% off cocktails every evening 5-8 PM",
+    image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800",
+    sponsored: true,
+  },
+  {
+    id: 4,
+    title: "Spa & Wellness Week",
+    subtitle: "Relax and rejuvenate with exclusive packages",
+    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800",
+    sponsored: false,
   },
 ];
 
@@ -176,9 +196,16 @@ const recommendedDeals = [
   },
 ];
 
+const SPOTLIGHT_WIDTH = width - 56;
+const SPOTLIGHT_INTERVAL = 4000;
+
 const HomeScreen = () => {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState(1);
+  const [currentSpotlight, setCurrentSpotlight] = useState(0);
+  const spotlightDirection = useRef(1); // 1 for forward, -1 for backward
+  const spotlightRef = useRef<FlatList>(null);
+  const spotlightScrollX = useRef(new Animated.Value(0)).current;
   const scrollY = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -210,6 +237,32 @@ const HomeScreen = () => {
     ]).start();
   }, []);
 
+  // Auto-scroll spotlight carousel with bounce-back effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSpotlight((prev) => {
+        let nextIndex = prev + spotlightDirection.current;
+
+        // Reverse direction at boundaries
+        if (nextIndex >= spotlightDeals.length - 1) {
+          nextIndex = spotlightDeals.length - 1;
+          spotlightDirection.current = -1;
+        } else if (nextIndex <= 0) {
+          nextIndex = 0;
+          spotlightDirection.current = 1;
+        }
+
+        spotlightRef.current?.scrollToOffset({
+          offset: nextIndex * (SPOTLIGHT_WIDTH + 16),
+          animated: true,
+        });
+        return nextIndex;
+      });
+    }, SPOTLIGHT_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, []);
+
   if (!quicksandLoaded || !manropeLoaded) {
     return (
       <View style={styles.loadingContainer}>
@@ -224,7 +277,10 @@ const HomeScreen = () => {
         styles.categoryChip,
         selectedCategory === item.id && styles.categoryChipActive,
       ]}
-      onPress={() => setSelectedCategory(item.id)}
+      onPress={() => {
+        setSelectedCategory(item.id);
+        router.push(`/category/${item.route}`);
+      }}
       activeOpacity={0.8}
     >
       <Text
@@ -251,9 +307,18 @@ const HomeScreen = () => {
       <TouchableOpacity activeOpacity={0.95}>
         <View style={styles.dealImageContainer}>
           <Image source={{ uri: item.image }} style={styles.dealImage} />
-          <TouchableOpacity style={styles.favoriteButton}>
-            <Feather name="heart" size={18} color={Colors.gray600} />
-          </TouchableOpacity>
+          <FavoriteButton
+            item={{
+              id: item.id,
+              name: item.name,
+              image: item.image,
+              price: item.price,
+              discount: item.discount,
+              category: item.category,
+            }}
+            size={18}
+            style={styles.favoriteButton}
+          />
           <View style={styles.discountBadge}>
             <Text style={styles.discountText}>{item.discount}% OFF!</Text>
           </View>
@@ -292,9 +357,17 @@ const HomeScreen = () => {
   }) => (
     <TouchableOpacity style={styles.expiringCard} activeOpacity={0.95}>
       <Image source={{ uri: item.image }} style={styles.expiringImage} />
-      <TouchableOpacity style={styles.expiringFavorite}>
-        <Feather name="heart" size={14} color={Colors.gray500} />
-      </TouchableOpacity>
+      <FavoriteButton
+        item={{
+          id: item.id + 100,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          discount: item.discount,
+        }}
+        size={14}
+        style={styles.expiringFavorite}
+      />
       <View style={styles.expiringInfo}>
         <Text style={styles.expiringName}>{item.name}</Text>
         <View style={styles.expiringTimeRow}>
@@ -344,9 +417,17 @@ const HomeScreen = () => {
       <TouchableOpacity activeOpacity={0.95}>
         <View style={styles.recommendedImageContainer}>
           <Image source={{ uri: item.image }} style={styles.recommendedImage} />
-          <TouchableOpacity style={styles.recommendedFavorite}>
-            <Feather name="heart" size={16} color={Colors.gray500} />
-          </TouchableOpacity>
+          <FavoriteButton
+            item={{
+              id: item.id + 200,
+              name: item.name,
+              image: item.image,
+              price: item.price,
+              discount: item.discount,
+            }}
+            size={16}
+            style={styles.recommendedFavorite}
+          />
           <View style={styles.recommendedDiscountBadge}>
             <Text style={styles.recommendedDiscountText}>
               {item.discount}% OFF
@@ -388,12 +469,22 @@ const HomeScreen = () => {
             <Text style={styles.userName}>Thilina</Text>
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.push("/search")}
+              activeOpacity={0.7}
+            >
               <Feather name="search" size={22} color={Colors.deepNavy} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.push("/notifications")}
+              activeOpacity={0.7}
+            >
               <Feather name="bell" size={22} color={Colors.deepNavy} />
-              <View style={styles.notificationDot} />
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>3</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -423,14 +514,18 @@ const HomeScreen = () => {
         </LinearGradient>
 
         {/* Early Bird Alert */}
-        <TouchableOpacity style={styles.alertBanner} activeOpacity={0.9}>
+        <TouchableOpacity
+          style={styles.alertBanner}
+          activeOpacity={0.9}
+          onPress={() => router.push("/(tabs)/wallet")}
+        >
           <View style={styles.alertIconContainer}>
-            <Feather name="lock" size={20} color={Colors.deepNavy} />
+            <Feather name="gift" size={20} color={Colors.deepNavy} />
           </View>
           <View style={styles.alertContent}>
-            <Text style={styles.alertTitle}>Early Bird Alert!</Text>
+            <Text style={styles.alertTitle}>Early Bird Offer</Text>
             <Text style={styles.alertSubtitle}>
-              Discover unlocked! Purchase a plan to access
+              Congratulations! You've received 3 free coupons.
             </Text>
           </View>
           <Feather name="chevron-right" size={24} color={Colors.deepNavy} />
@@ -447,40 +542,136 @@ const HomeScreen = () => {
         />
 
         {/* Spotlight Section */}
-        <View style={styles.sectionHeader}>
+        <View style={styles.spotlightHeader}>
           <Text style={styles.sectionTitle}>Spotlight</Text>
-          <TouchableOpacity>
-            <Text style={styles.viewAllText}>View All</Text>
-          </TouchableOpacity>
         </View>
 
-        {spotlightDeals.map((deal) => (
-          <TouchableOpacity
-            key={deal.id}
-            style={styles.spotlightCard}
-            activeOpacity={0.95}
-          >
-            <Image source={{ uri: deal.image }} style={styles.spotlightImage} />
-            <LinearGradient
-              colors={["transparent", "rgba(0,0,0,0.8)"]}
-              style={styles.spotlightGradient}
-            >
-              {deal.sponsored && (
-                <View style={styles.sponsoredBadge}>
-                  <Feather name="zap" size={12} color={Colors.white} />
-                  <Text style={styles.sponsoredText}>SPONSORED</Text>
-                </View>
-              )}
-              <Text style={styles.spotlightTitle}>{deal.title}</Text>
-              <Text style={styles.spotlightSubtitle}>{deal.subtitle}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        ))}
+        <Animated.FlatList
+          ref={spotlightRef}
+          data={spotlightDeals}
+          keyExtractor={(item) => item.id.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={SPOTLIGHT_WIDTH + 16}
+          decelerationRate="fast"
+          contentContainerStyle={styles.spotlightCarousel}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: spotlightScrollX } } }],
+            {
+              useNativeDriver: false,
+              listener: (event: any) => {
+                const offsetX = event.nativeEvent.contentOffset.x;
+                const index = Math.round(offsetX / (SPOTLIGHT_WIDTH + 16));
+                if (
+                  index !== currentSpotlight &&
+                  index >= 0 &&
+                  index < spotlightDeals.length
+                ) {
+                  setCurrentSpotlight(index);
+                }
+              },
+            },
+          )}
+          scrollEventThrottle={16}
+          renderItem={({ item: deal, index }) => {
+            const inputRange = [
+              (index - 1) * (SPOTLIGHT_WIDTH + 16),
+              index * (SPOTLIGHT_WIDTH + 16),
+              (index + 1) * (SPOTLIGHT_WIDTH + 16),
+            ];
+            const scale = spotlightScrollX.interpolate({
+              inputRange,
+              outputRange: [0.95, 1, 0.95],
+              extrapolate: "clamp",
+            });
+            const opacity = spotlightScrollX.interpolate({
+              inputRange,
+              outputRange: [0.7, 1, 0.7],
+              extrapolate: "clamp",
+            });
+            return (
+              <Animated.View style={{ transform: [{ scale }], opacity }}>
+                <TouchableOpacity
+                  style={styles.spotlightCard}
+                  activeOpacity={0.95}
+                >
+                  <Image
+                    source={{ uri: deal.image }}
+                    style={styles.spotlightImage}
+                  />
+                  <LinearGradient
+                    colors={["transparent", "rgba(0,0,0,0.8)"]}
+                    style={styles.spotlightGradient}
+                  >
+                    {deal.sponsored && (
+                      <View style={styles.sponsoredBadge}>
+                        <Feather name="zap" size={12} color={Colors.white} />
+                        <Text style={styles.sponsoredText}>SPONSORED</Text>
+                      </View>
+                    )}
+                    <Text style={styles.spotlightTitle}>{deal.title}</Text>
+                    <Text style={styles.spotlightSubtitle}>
+                      {deal.subtitle}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
+            );
+          }}
+        />
+
+        {/* Spotlight Pagination Dots */}
+        <View style={styles.paginationContainer}>
+          {spotlightDeals.map((_, index) => {
+            const inputRange = [
+              (index - 1) * (SPOTLIGHT_WIDTH + 16),
+              index * (SPOTLIGHT_WIDTH + 16),
+              (index + 1) * (SPOTLIGHT_WIDTH + 16),
+            ];
+            const dotWidth = spotlightScrollX.interpolate({
+              inputRange,
+              outputRange: [8, 24, 8],
+              extrapolate: "clamp",
+            });
+            const dotOpacity = spotlightScrollX.interpolate({
+              inputRange,
+              outputRange: [0.4, 1, 0.4],
+              extrapolate: "clamp",
+            });
+            return (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  spotlightRef.current?.scrollToOffset({
+                    offset: index * (SPOTLIGHT_WIDTH + 16),
+                    animated: true,
+                  });
+                  setCurrentSpotlight(index);
+                }}
+                activeOpacity={0.8}
+              >
+                <Animated.View
+                  style={[
+                    styles.paginationDot,
+                    {
+                      width: dotWidth,
+                      opacity: dotOpacity,
+                      backgroundColor:
+                        currentSpotlight === index
+                          ? Colors.orange
+                          : Colors.gray400,
+                    },
+                  ]}
+                />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* Deals of the Day */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Deals of the Day</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/deals/deals-of-day")}>
             <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
         </View>
@@ -499,7 +690,7 @@ const HomeScreen = () => {
         {/* Recently Expiring */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recently Expiring</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/deals/expiring")}>
             <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
         </View>
@@ -511,7 +702,7 @@ const HomeScreen = () => {
         {/* Recommended for You */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recommended for you</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/deals/recommended")}>
             <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
         </View>
@@ -588,6 +779,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.orange,
     borderWidth: 2,
     borderColor: Colors.white,
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: Colors.orange,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: Colors.white,
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    fontFamily: Fonts.body.bold,
+    fontSize: 10,
+    color: Colors.white,
   },
   savingsCard: {
     marginHorizontal: 20,
@@ -708,12 +918,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.orange,
   },
+  spotlightHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  spotlightCarousel: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 20,
+    gap: 8,
+  },
+  paginationDot: {
+    height: 8,
+    borderRadius: 4,
+  },
   spotlightCard: {
-    marginHorizontal: 20,
+    width: width - 56,
     height: 200,
     borderRadius: 20,
     overflow: "hidden",
-    marginBottom: 24,
+    marginRight: 16,
   },
   spotlightImage: {
     width: "100%",

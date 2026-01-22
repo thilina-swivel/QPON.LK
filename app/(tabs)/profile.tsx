@@ -1,26 +1,26 @@
 import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-    Quicksand_700Bold,
-    useFonts as useQuicksandFonts,
+  Quicksand_700Bold,
+  useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useRef, useState } from "react";
 import {
-    Animated,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../../constants/theme";
@@ -136,8 +136,12 @@ const ProfileScreen = () => {
   };
 
   const handleMenuPress = (item: string) => {
-    console.log(`Navigate to ${item}`);
-    // TODO: Implement navigation to respective screens
+    if (item === "Favorites") {
+      router.push("/favorites");
+    } else {
+      console.log(`Navigate to ${item}`);
+      // TODO: Implement navigation to other screens
+    }
   };
 
   return (
