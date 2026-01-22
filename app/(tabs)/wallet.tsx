@@ -1,29 +1,29 @@
 import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-    Quicksand_600SemiBold,
-    Quicksand_700Bold,
-    useFonts as useQuicksandFonts,
+  Quicksand_600SemiBold,
+  Quicksand_700Bold,
+  useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../../constants/theme";
@@ -222,12 +222,6 @@ const WalletScreen = () => {
               <Text style={styles.couponName} numberOfLines={2}>
                 {item.name}
               </Text>
-              <TouchableOpacity
-                style={styles.couponFavorite}
-                activeOpacity={0.7}
-              >
-                <Feather name="heart" size={18} color={Colors.orange} />
-              </TouchableOpacity>
             </View>
 
             <View style={styles.couponExpiry}>
@@ -697,15 +691,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.deepNavy,
     flex: 1,
-  },
-  couponFavorite: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(255,90,0,0.1)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 8,
   },
   couponExpiry: {
     flexDirection: "row",
