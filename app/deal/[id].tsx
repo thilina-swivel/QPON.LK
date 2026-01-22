@@ -1,0 +1,920 @@
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+    Animated,
+    Dimensions,
+    FlatList,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFavorites } from "../../context/FavoritesContext";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const IMAGE_HEIGHT = 280;
+
+// Mock deal data - in real app, fetch based on ID
+const getDealById = (id: string) => ({
+  id: parseInt(id) || 1,
+  title: "Gourmet Burger Combo",
+  subtitle: "Premium dining experience with signature burgers",
+  merchant: {
+    name: "Urban Bites Kitchen",
+    location: "Colombo 03, Near Dutch Hospital",
+    rating: 4.8,
+    reviewCount: 256,
+  },
+  images: [
+    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
+    "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800",
+    "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800",
+  ],
+  originalPrice: 2500,
+  discountedPrice: 1875,
+  discountPercent: 25,
+  currency: "LKR",
+  totalCoupons: 500,
+  soldCount: 347,
+  remainingCount: 153,
+  expirationDate: "2026-02-15",
+  validTimeStart: "5:00 PM",
+  validTimeEnd: "9:00 PM",
+  validDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+  description:
+    "Indulge in our signature gourmet burger combo featuring a juicy 200g premium beef patty, topped with aged cheddar, caramelized onions, crispy bacon, fresh lettuce, and our secret house sauce. Served with golden crispy fries and a refreshing drink of your choice.\n\nPerfect for food enthusiasts looking for an exceptional dining experience at an unbeatable price.",
+  termsAndConditions: [
+    "Valid for dine-in only",
+    "One coupon per person per visit",
+    "Cannot be combined with other offers",
+    "Reservation recommended during peak hours",
+    "Valid Monday to Friday, 5:00 PM - 9:00 PM",
+    "Must present coupon before ordering",
+    "No cash value or refunds",
+    "Management reserves the right to modify terms",
+  ],
+  category: "Dining",
+});
+
+export default function DealDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  const deal = getDealById(id || "1");
+  const isFav = isFavorite(deal.id);
+
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const headerOpacity = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+  const heartScale = useRef(new Animated.Value(1)).current;
+
+  // Carousel state
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const carouselRef = useRef<FlatList>(null);
+  const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    // Entry animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Auto-scroll carousel
+    startAutoScroll();
+
+    return () => {
+      if (autoScrollTimer.current) {
+        clearInterval(autoScrollTimer.current);
+      }
+    };
+  }, []);
+
+  const startAutoScroll = () => {
+    autoScrollTimer.current = setInterval(() => {
+      setActiveImageIndex((prev) => {
+        const next = (prev + 1) % deal.images.length;
+        carouselRef.current?.scrollToIndex({ index: next, animated: true });
+        return next;
+      });
+    }, 4000);
+  };
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / SCREEN_WIDTH);
+    if (index !== activeImageIndex) {
+      setActiveImageIndex(index);
+      // Reset auto-scroll timer when user scrolls manually
+      if (autoScrollTimer.current) {
+        clearInterval(autoScrollTimer.current);
+        startAutoScroll();
+      }
+    }
+
+    // Update header opacity based on scroll
+    const scrollY = event.nativeEvent.contentOffset.y;
+    Animated.timing(headerOpacity, {
+      toValue: scrollY > 100 ? 1 : 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleFavoritePress = () => {
+    Animated.sequence([
+      Animated.spring(heartScale, {
+        toValue: 1.3,
+        tension: 300,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+      Animated.spring(heartScale, {
+        toValue: 1,
+        tension: 300,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    toggleFavorite({
+      id: deal.id,
+      name: deal.title,
+      image: deal.images[0],
+      price: deal.discountedPrice,
+      discount: deal.discountPercent,
+      category: deal.category,
+    });
+  };
+
+  const handleBuyPress = () => {
+    Animated.sequence([
+      Animated.timing(buttonScale, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonScale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    // Handle purchase logic
+  };
+
+  const formatPrice = (price: number) => {
+    return price.toLocaleString();
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const remainingPercent = (deal.remainingCount / deal.totalCoupons) * 100;
+
+  const renderImageItem = ({ item }: { item: string }) => (
+    <View style={styles.imageContainer}>
+      <LinearGradient
+        colors={["#1a1a3e", "#2d2d5a"]}
+        style={styles.imagePlaceholder}
+      >
+        <Feather name="image" size={48} color="rgba(255,255,255,0.3)" />
+      </LinearGradient>
+      <LinearGradient
+        colors={["transparent", "rgba(0,0,0,0.7)"]}
+        style={styles.imageOverlay}
+      />
+    </View>
+  );
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <StatusBar barStyle="light-content" />
+
+      {/* Fixed Header */}
+      <Animated.View
+        style={[
+          styles.fixedHeader,
+          { paddingTop: insets.top, opacity: headerOpacity },
+        ]}
+      >
+        <Text style={styles.fixedHeaderTitle} numberOfLines={1}>
+          {deal.title}
+        </Text>
+      </Animated.View>
+
+      {/* Back Button */}
+      <TouchableOpacity
+        style={[styles.backButton, { top: insets.top + 10 }]}
+        onPress={() => router.back()}
+        activeOpacity={0.8}
+      >
+        <View style={styles.backButtonInner}>
+          <Feather name="arrow-left" size={20} color="#fff" />
+        </View>
+      </TouchableOpacity>
+
+      {/* Favorite Button */}
+      <Animated.View
+        style={[
+          styles.favoriteButton,
+          { top: insets.top + 10, transform: [{ scale: heartScale }] },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={handleFavoritePress}
+          activeOpacity={0.8}
+          style={styles.favoriteButtonInner}
+        >
+          {isFav ? (
+            <Ionicons name="heart" size={22} color="#FF6B35" />
+          ) : (
+            <Feather name="heart" size={20} color="#fff" />
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+      >
+        <Animated.View
+          style={[
+            styles.content,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
+            },
+          ]}
+        >
+          {/* Image Carousel */}
+          <View style={styles.carouselContainer}>
+            <FlatList
+              ref={carouselRef}
+              data={deal.images}
+              renderItem={renderImageItem}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              keyExtractor={(_, index) => index.toString()}
+            />
+
+            {/* Pagination Dots */}
+            <View style={styles.pagination}>
+              {deal.images.map((_, index) => (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    activeImageIndex === index && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+
+            {/* Discount Badge */}
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountBadgeText}>
+                {deal.discountPercent}% OFF
+              </Text>
+            </View>
+          </View>
+
+          {/* Main Content Card */}
+          <View style={styles.mainCard}>
+            {/* Title Section */}
+            <View style={styles.titleSection}>
+              <Text style={styles.dealTitle}>{deal.title}</Text>
+              <Text style={styles.dealSubtitle}>{deal.subtitle}</Text>
+            </View>
+
+            {/* Merchant Info */}
+            <TouchableOpacity style={styles.merchantCard} activeOpacity={0.7}>
+              <View style={styles.merchantIcon}>
+                <Feather name="map-pin" size={18} color="#FF6B35" />
+              </View>
+              <View style={styles.merchantInfo}>
+                <Text style={styles.merchantName}>{deal.merchant.name}</Text>
+                <Text style={styles.merchantLocation}>
+                  {deal.merchant.location}
+                </Text>
+              </View>
+              <View style={styles.ratingBadge}>
+                <Feather name="star" size={12} color="#FFD700" />
+                <Text style={styles.ratingText}>{deal.merchant.rating}</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Price Section */}
+            <View style={styles.priceSection}>
+              <View style={styles.priceLeft}>
+                <Text style={styles.originalPrice}>
+                  {deal.currency} {formatPrice(deal.originalPrice)}
+                </Text>
+                <Text style={styles.discountedPrice}>
+                  {deal.currency} {formatPrice(deal.discountedPrice)}
+                </Text>
+              </View>
+              <View style={styles.savingsBadge}>
+                <Text style={styles.savingsText}>
+                  Save {deal.currency}{" "}
+                  {formatPrice(deal.originalPrice - deal.discountedPrice)}
+                </Text>
+              </View>
+            </View>
+
+            {/* Stats Section */}
+            <View style={styles.statsSection}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{deal.totalCoupons}</Text>
+                <Text style={styles.statLabel}>Total</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{deal.soldCount}</Text>
+                <Text style={styles.statLabel}>Sold</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, styles.remainingValue]}>
+                  {deal.remainingCount}
+                </Text>
+                <Text style={styles.statLabel}>Left</Text>
+              </View>
+            </View>
+
+            {/* Progress Bar */}
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBar}>
+                <Animated.View
+                  style={[
+                    styles.progressFill,
+                    { width: `${100 - remainingPercent}%` },
+                  ]}
+                />
+              </View>
+              <Text style={styles.progressText}>
+                {Math.round(100 - remainingPercent)}% claimed
+              </Text>
+            </View>
+
+            {/* Validity Section */}
+            <View style={styles.validitySection}>
+              <View style={styles.validityItem}>
+                <View style={styles.validityIcon}>
+                  <Feather name="calendar" size={16} color="#FF6B35" />
+                </View>
+                <View>
+                  <Text style={styles.validityLabel}>Expires</Text>
+                  <Text style={styles.validityValue}>
+                    {formatDate(deal.expirationDate)}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.validityItem}>
+                <View style={styles.validityIcon}>
+                  <Feather name="clock" size={16} color="#FF6B35" />
+                </View>
+                <View>
+                  <Text style={styles.validityLabel}>Valid Time</Text>
+                  <Text style={styles.validityValue}>
+                    {deal.validTimeStart} – {deal.validTimeEnd}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Valid Days */}
+            <View style={styles.validDays}>
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                <View
+                  key={day}
+                  style={[
+                    styles.dayBadge,
+                    deal.validDays.includes(day) && styles.dayBadgeActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.dayText,
+                      deal.validDays.includes(day) && styles.dayTextActive,
+                    ]}
+                  >
+                    {day}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Description Card */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Feather name="file-text" size={18} color="#FF6B35" />
+              <Text style={styles.sectionTitle}>About This Deal</Text>
+            </View>
+            <Text style={styles.descriptionText}>{deal.description}</Text>
+          </View>
+
+          {/* Terms & Conditions Card */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Feather name="info" size={18} color="#FF6B35" />
+              <Text style={styles.sectionTitle}>Terms & Conditions</Text>
+            </View>
+            {deal.termsAndConditions.map((term, index) => (
+              <View key={index} style={styles.termItem}>
+                <View style={styles.termBullet} />
+                <Text style={styles.termText}>{term}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Bottom Spacing */}
+          <View style={{ height: 120 }} />
+        </Animated.View>
+      </ScrollView>
+
+      {/* Bottom CTA */}
+      <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 10 }]}>
+        <View style={styles.ctaLeft}>
+          <Text style={styles.ctaPrice}>
+            {deal.currency} {formatPrice(deal.discountedPrice)}
+          </Text>
+          <Text style={styles.ctaOriginal}>
+            {deal.currency} {formatPrice(deal.originalPrice)}
+          </Text>
+        </View>
+        <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+          <TouchableOpacity
+            style={styles.buyButton}
+            onPress={handleBuyPress}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={["#FF6B35", "#FF8B5A"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buyButtonGradient}
+            >
+              <Text style={styles.buyButtonText}>Get Coupon</Text>
+              <Feather name="arrow-right" size={18} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0a0a1a",
+  },
+  fixedHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 90,
+    backgroundColor: "rgba(10, 10, 26, 0.95)",
+    zIndex: 100,
+    justifyContent: "flex-end",
+    paddingBottom: 12,
+    paddingHorizontal: 60,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.05)",
+  },
+  fixedHeaderTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "Quicksand_600SemiBold",
+    textAlign: "center",
+  },
+  backButton: {
+    position: "absolute",
+    left: 16,
+    zIndex: 101,
+  },
+  backButtonInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  favoriteButton: {
+    position: "absolute",
+    right: 16,
+    zIndex: 101,
+  },
+  favoriteButtonInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  carouselContainer: {
+    height: IMAGE_HEIGHT,
+    position: "relative",
+  },
+  imageContainer: {
+    width: SCREEN_WIDTH,
+    height: IMAGE_HEIGHT,
+  },
+  imagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imageOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+  },
+  pagination: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "rgba(255,255,255,0.4)",
+  },
+  paginationDotActive: {
+    backgroundColor: "#FF6B35",
+    width: 24,
+  },
+  discountBadge: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    backgroundColor: "#FF6B35",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  discountBadgeText: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "Manrope_700Bold",
+  },
+  mainCard: {
+    backgroundColor: "rgba(255,255,255,0.03)",
+    marginHorizontal: 16,
+    marginTop: -30,
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+  titleSection: {
+    marginBottom: 16,
+  },
+  dealTitle: {
+    color: "#fff",
+    fontSize: 22,
+    fontFamily: "Quicksand_700Bold",
+    marginBottom: 6,
+  },
+  dealSubtitle: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 14,
+    fontFamily: "Manrope_400Regular",
+    lineHeight: 20,
+  },
+  merchantCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,107,53,0.08)",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  merchantIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,107,53,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  merchantInfo: {
+    flex: 1,
+  },
+  merchantName: {
+    color: "#fff",
+    fontSize: 15,
+    fontFamily: "Manrope_600SemiBold",
+    marginBottom: 2,
+  },
+  merchantLocation: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 12,
+    fontFamily: "Manrope_400Regular",
+  },
+  ratingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,215,0,0.15)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+  },
+  ratingText: {
+    color: "#FFD700",
+    fontSize: 12,
+    fontFamily: "Manrope_600SemiBold",
+  },
+  priceSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.05)",
+  },
+  priceLeft: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 10,
+  },
+  originalPrice: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: 14,
+    fontFamily: "Manrope_500Medium",
+    textDecorationLine: "line-through",
+  },
+  discountedPrice: {
+    color: "#FF6B35",
+    fontSize: 26,
+    fontFamily: "Quicksand_700Bold",
+  },
+  savingsBadge: {
+    backgroundColor: "rgba(76,217,100,0.15)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  savingsText: {
+    color: "#4CD964",
+    fontSize: 12,
+    fontFamily: "Manrope_600SemiBold",
+  },
+  statsSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    marginBottom: 12,
+  },
+  statItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  statValue: {
+    color: "#fff",
+    fontSize: 20,
+    fontFamily: "Quicksand_700Bold",
+  },
+  remainingValue: {
+    color: "#FF6B35",
+  },
+  statLabel: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 12,
+    fontFamily: "Manrope_400Regular",
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  progressContainer: {
+    marginBottom: 16,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#FF6B35",
+    borderRadius: 3,
+  },
+  progressText: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 11,
+    fontFamily: "Manrope_400Regular",
+    marginTop: 6,
+    textAlign: "right",
+  },
+  validitySection: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 12,
+  },
+  validityItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.03)",
+    padding: 12,
+    borderRadius: 12,
+    gap: 10,
+  },
+  validityIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,107,53,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  validityLabel: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 11,
+    fontFamily: "Manrope_400Regular",
+  },
+  validityValue: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "Manrope_600SemiBold",
+  },
+  validDays: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  dayBadge: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    alignItems: "center",
+  },
+  dayBadgeActive: {
+    backgroundColor: "rgba(255,107,53,0.15)",
+  },
+  dayText: {
+    color: "rgba(255,255,255,0.3)",
+    fontSize: 10,
+    fontFamily: "Manrope_600SemiBold",
+  },
+  dayTextActive: {
+    color: "#FF6B35",
+  },
+  sectionCard: {
+    backgroundColor: "rgba(255,255,255,0.03)",
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "Quicksand_600SemiBold",
+  },
+  descriptionText: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 14,
+    fontFamily: "Manrope_400Regular",
+    lineHeight: 22,
+  },
+  termItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+    gap: 10,
+  },
+  termBullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#FF6B35",
+    marginTop: 7,
+  },
+  termText: {
+    flex: 1,
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 13,
+    fontFamily: "Manrope_400Regular",
+    lineHeight: 20,
+  },
+  bottomCTA: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    backgroundColor: "rgba(10, 10, 26, 0.95)",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.05)",
+  },
+  ctaLeft: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 8,
+  },
+  ctaPrice: {
+    color: "#fff",
+    fontSize: 22,
+    fontFamily: "Quicksand_700Bold",
+  },
+  ctaOriginal: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: 14,
+    fontFamily: "Manrope_400Regular",
+    textDecorationLine: "line-through",
+  },
+  buyButton: {
+    borderRadius: 25,
+    overflow: "hidden",
+  },
+  buyButtonGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    gap: 8,
+  },
+  buyButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "Manrope_700Bold",
+  },
+});

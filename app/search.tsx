@@ -296,7 +296,7 @@ const SearchScreen = () => {
   }
 
   const renderDealCard = (deal: Deal) => (
-    <TouchableOpacity key={deal.id} style={styles.dealCard} activeOpacity={0.9}>
+    <TouchableOpacity key={deal.id} style={styles.dealCard} activeOpacity={0.9} onPress={() => router.push(`/deal/${deal.id}`)}>
       <View style={styles.dealImageContainer}>
         <Image source={{ uri: deal.image }} style={styles.dealImage} />
         <FavoriteButton

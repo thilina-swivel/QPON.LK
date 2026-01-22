@@ -92,7 +92,10 @@ const FavoritesScreen = () => {
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.9}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => router.push(`/deal/${item.id}`)}
+      >
         <View style={styles.cardImageContainer}>
           <Image source={{ uri: item.image }} style={styles.cardImage} />
           <FavoriteButton item={item} size={16} style={styles.cardFavorite} />

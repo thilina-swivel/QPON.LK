@@ -477,7 +477,10 @@ const CategoryScreen = () => {
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.9}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => router.push(`/deal/${item.id}`)}
+      >
         <View style={styles.dealImageContainer}>
           <Image source={{ uri: item.image }} style={styles.dealImage} />
           <FavoriteButton

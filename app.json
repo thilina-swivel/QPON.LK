@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "QPON.lK",
+    "name": "QPON",
     "slug": "QPON.lK",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,7 +23,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.QPON.lK"
     },
     "web": {
       "output": "static",

@@ -304,7 +304,10 @@ const HomeScreen = () => {
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.95}>
+      <TouchableOpacity
+        activeOpacity={0.95}
+        onPress={() => router.push(`/deal/${item.id}`)}
+      >
         <View style={styles.dealImageContainer}>
           <Image source={{ uri: item.image }} style={styles.dealImage} />
           <FavoriteButton
@@ -355,7 +358,11 @@ const HomeScreen = () => {
   }: {
     item: (typeof expiringDeals)[0];
   }) => (
-    <TouchableOpacity style={styles.expiringCard} activeOpacity={0.95}>
+    <TouchableOpacity
+      style={styles.expiringCard}
+      activeOpacity={0.95}
+      onPress={() => router.push(`/deal/${item.id}`)}
+    >
       <Image source={{ uri: item.image }} style={styles.expiringImage} />
       <FavoriteButton
         item={{
@@ -414,7 +421,10 @@ const HomeScreen = () => {
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.95}>
+      <TouchableOpacity
+        activeOpacity={0.95}
+        onPress={() => router.push(`/deal/${item.id}`)}
+      >
         <View style={styles.recommendedImageContainer}>
           <Image source={{ uri: item.image }} style={styles.recommendedImage} />
           <FavoriteButton
