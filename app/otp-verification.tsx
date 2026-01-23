@@ -1,28 +1,28 @@
 import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-    Quicksand_600SemiBold,
-    Quicksand_700Bold,
-    useFonts as useQuicksandFonts,
+  Quicksand_600SemiBold,
+  Quicksand_700Bold,
+  useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../constants/theme";
@@ -480,20 +480,20 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   otpInputFocused: {
-    borderColor: Colors.gray300,
+    borderColor: Colors.blueSoft,
     shadowOpacity: 0.1,
   },
   otpInputFilled: {
-    borderColor: Colors.teal,
-    backgroundColor: "#F0FEFF",
+    borderColor: Colors.blueSoftDark,
+    backgroundColor: Colors.blueSoftBg,
   },
   otpInputError: {
-    borderColor: "#FF4444",
-    backgroundColor: "#FFF5F5",
+    borderColor: Colors.errorSoft,
+    backgroundColor: Colors.errorSoftBg,
   },
   otpInputSuccess: {
-    borderColor: Colors.green,
-    backgroundColor: "#F5FFF5",
+    borderColor: Colors.successSoft,
+    backgroundColor: Colors.successSoftBg,
   },
   otpInput: {
     fontFamily: Fonts.body.bold,
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: Fonts.body.medium,
     fontSize: 14,
-    color: "#FF4444",
+    color: Colors.errorSoft,
   },
   successContainer: {
     alignItems: "center",
@@ -523,11 +523,11 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.green,
+    backgroundColor: Colors.successSoft,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
-    shadowColor: Colors.green,
+    shadowColor: Colors.successSoft,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

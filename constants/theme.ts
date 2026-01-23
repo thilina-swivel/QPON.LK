@@ -31,8 +31,17 @@ export const Colors = {
   // Status Colors
   success: "#10B981",
   successLight: "rgba(16, 185, 129, 0.1)",
+  successSoft: "#A8D5BA",
+  successSoftBg: "#F7FBF8",
   error: "#EF4444",
   errorLight: "rgba(239, 68, 68, 0.1)",
+  errorSoft: "#E8B4B4",
+  errorSoftBg: "#FDF8F8",
+
+  // Soft Accent Colors (for subtle UI elements)
+  blueSoft: "#B8D4E3",
+  blueSoftDark: "#9DC5D8",
+  blueSoftBg: "#F5FAFB",
 
   // Neutral Colors
   white: "#FFFFFF",
