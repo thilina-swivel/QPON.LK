@@ -9,6 +9,7 @@ import {
 } from "@expo-google-fonts/quicksand";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -30,17 +31,38 @@ const { width, height } = Dimensions.get("window");
 const slides = [
   {
     id: 1,
-    title: "Your next\nadventure awaits!",
+    title: "Swipe through\nexclusive offers",
     description:
-      "QPON will be your local travel guide, helping you save time and money when you go on your next big Lankan adventure.",
-    image: require("../assets/images/onboarding/slide1.png"),
+      "Browse by category or explore your favourite merchants. It’s your adventure, your way. ",
+    image: require("../assets/images/onboarding/Slide1.png"),
   },
   {
     id: 2,
-    title: "Deals that find you",
+    title: "Unlock your \ndeal instantly",
     description:
-      "With QPON, you’re always one step away from your next great find. ",
-    image: require("../assets/images/onboarding/slide2.png"),
+      "Just show your QPON code at checkout and enjoy your discount. Simple, fast, and rewarding. ",
+    image: require("../assets/images/onboarding/Slide2.png"),
+  },
+  {
+    id: 3,
+    title: "Request a \ndeal near you",
+    description:
+      "Request promotions from your favourite merchants, and we’ll help make them happen. ",
+    image: require("../assets/images/onboarding/Slide3.png"),
+  },
+  {
+    id: 4,
+    title: "Your next \nadventure awaits! ",
+    description:
+      "QPON is your local travel guide, helping you save time and money on adventures. ",
+    image: require("../assets/images/onboarding/Slide4.png"),
+  },
+  {
+    id: 5,
+    title: "Deals \nthat find you ",
+    description:
+      "Get instant alerts for nearby discounts with QPON, always one step from great finds. ",
+    image: require("../assets/images/onboarding/Slide5.png"),
   },
 ];
 
@@ -50,7 +72,7 @@ const WelcomeScreen = () => {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
+  const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [fontsLoaded] = useFonts({
     Quicksand_600SemiBold,
@@ -130,6 +152,7 @@ const WelcomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar style="light" />
       <View style={styles.slidesWrapper}>
         <FlatList
           ref={flatListRef}
@@ -208,11 +231,10 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   illustrationContainer: {
-    height: height * 0.4,
+    height: height * 0.38,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 10,
   },
   slideImage: {
     width: width - 32,
@@ -220,14 +242,14 @@ const styles = StyleSheet.create({
   },
   textSection: {
     paddingHorizontal: 24,
-    paddingTop: 24,
-    flex: 1,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
   mainTitle: {
     fontFamily: Fonts.heading.bold,
     fontSize: 28,
     color: Colors.textPrimary,
-    marginBottom: 14,
+    marginBottom: 8,
     lineHeight: 36,
   },
   description: {
@@ -241,7 +263,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 8,
-    paddingVertical: 20,
+    paddingVertical: 24,
   },
   indicator: {
     width: 8,

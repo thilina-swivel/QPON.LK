@@ -1,31 +1,31 @@
 import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-    Quicksand_600SemiBold,
-    Quicksand_700Bold,
-    useFonts as useQuicksandFonts,
+  Quicksand_600SemiBold,
+  Quicksand_700Bold,
+  useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../constants/theme";
@@ -50,7 +50,14 @@ const RegisterScreen = () => {
   const [mobileNumber, setMobileNumber] = useState("");
   const [selectedCountry, setSelectedCountry] = useState(countryCodes[0]);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  const filteredCountryCodes = countryCodes.filter(
+    (country) =>
+      country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      country.code.includes(countrySearch),
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   // Focus states for animations
@@ -311,24 +318,61 @@ const RegisterScreen = () => {
             {/* Country Picker Dropdown */}
             {showCountryPicker && (
               <Animated.View style={styles.countryPickerDropdown}>
-                {countryCodes.map((country) => (
-                  <TouchableOpacity
-                    key={country.code}
-                    style={[
-                      styles.countryOption,
-                      selectedCountry.code === country.code &&
-                        styles.countryOptionSelected,
-                    ]}
-                    onPress={() => {
-                      setSelectedCountry(country);
-                      setShowCountryPicker(false);
-                    }}
+                <View style={styles.countrySearchContainer}>
+                  <Feather name="search" size={18} color={Colors.gray400} />
+                  <TextInput
+                    style={styles.countrySearchInput}
+                    placeholder="Search country or code..."
+                    placeholderTextColor={Colors.gray400}
+                    value={countrySearch}
+                    onChangeText={setCountrySearch}
+                    autoFocus
+                  />
+                  {countrySearch.length > 0 && (
+                    <TouchableOpacity onPress={() => setCountrySearch("")}>
+                      <Feather
+                        name="x-circle"
+                        size={16}
+                        color={Colors.gray400}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                {filteredCountryCodes.length === 0 ? (
+                  <View style={styles.noResultsContainer}>
+                    <Text style={styles.noResultsText}>No countries found</Text>
+                  </View>
+                ) : (
+                  <ScrollView
+                    style={styles.countryListScroll}
+                    nestedScrollEnabled
+                    showsVerticalScrollIndicator={false}
                   >
-                    <Text style={styles.countryFlag}>{country.flag}</Text>
-                    <Text style={styles.countryName}>{country.country}</Text>
-                    <Text style={styles.countryCodeOption}>{country.code}</Text>
-                  </TouchableOpacity>
-                ))}
+                    {filteredCountryCodes.map((country) => (
+                      <TouchableOpacity
+                        key={country.code}
+                        style={[
+                          styles.countryOption,
+                          selectedCountry.code === country.code &&
+                            styles.countryOptionSelected,
+                        ]}
+                        onPress={() => {
+                          setSelectedCountry(country);
+                          setShowCountryPicker(false);
+                          setCountrySearch("");
+                        }}
+                      >
+                        <Text style={styles.countryFlag}>{country.flag}</Text>
+                        <Text style={styles.countryName}>
+                          {country.country}
+                        </Text>
+                        <Text style={styles.countryCodeOption}>
+                          {country.code}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
               </Animated.View>
             )}
 
@@ -443,6 +487,8 @@ const styles = StyleSheet.create({
   },
   formSection: {
     marginBottom: 32,
+    position: "relative",
+    zIndex: 10,
   },
   inputContainer: {
     backgroundColor: Colors.white,
@@ -504,16 +550,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   countryPickerDropdown: {
+    position: "absolute",
+    top: 230,
+    left: 0,
+    right: 0,
     backgroundColor: Colors.white,
     borderRadius: 16,
-    marginTop: -8,
-    marginBottom: 16,
     paddingVertical: 8,
     shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 12,
-    elevation: 4,
+    elevation: 10,
+    zIndex: 1000,
+    maxHeight: 280,
+  },
+  countryListScroll: {
+    maxHeight: 220,
+  },
+  countrySearchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray100,
+    gap: 10,
+  },
+  countrySearchInput: {
+    flex: 1,
+    fontFamily: Fonts.body.medium,
+    fontSize: 14,
+    color: Colors.deepNavy,
+    paddingVertical: 4,
+  },
+  noResultsContainer: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  noResultsText: {
+    fontFamily: Fonts.body.medium,
+    fontSize: 14,
+    color: Colors.gray400,
   },
   countryOption: {
     flexDirection: "row",

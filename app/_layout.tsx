@@ -53,6 +53,23 @@ export default function RootLayout() {
             name="package-success"
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="notification-settings"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="terms" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="privacy-policy"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="payment-history"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="contact-us" options={{ headerShown: false }} />
+          <Stack.Screen name="about-us" options={{ headerShown: false }} />
+          <Stack.Screen name="faq" options={{ headerShown: false }} />
           <Stack.Screen
             name="modal"
             options={{ presentation: "modal", title: "Modal" }}

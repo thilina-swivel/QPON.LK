@@ -146,7 +146,7 @@ const FavoritesScreen = () => {
         >
           <Feather name="arrow-left" size={24} color={Colors.deepNavy} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Favorites</Text>
+        <Text style={styles.headerTitle}>Favorite Deals</Text>
         <View style={styles.headerSpacer} />
       </Animated.View>
 
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.orange,
     paddingHorizontal: 32,
     paddingVertical: 14,
-    borderRadius: 16,
+    borderRadius: 28,
     shadowColor: Colors.orange,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

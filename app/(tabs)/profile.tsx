@@ -1,26 +1,26 @@
 import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-    Quicksand_700Bold,
-    useFonts as useQuicksandFonts,
+  Quicksand_700Bold,
+  useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useRef, useState } from "react";
 import {
-    Animated,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../../constants/theme";
@@ -136,11 +136,30 @@ const ProfileScreen = () => {
   };
 
   const handleMenuPress = (item: string) => {
-    if (item === "Favorites") {
-      router.push("/favorites");
-    } else {
-      console.log(`Navigate to ${item}`);
-      // TODO: Implement navigation to other screens
+    switch (item) {
+      case "Payment History":
+        router.push("/payment-history");
+        break;
+      case "Favorite Deals":
+        router.push("/favorites");
+        break;
+      case "Contact Us":
+        router.push("/contact-us");
+        break;
+      case "About Us":
+        router.push("/about-us");
+        break;
+      case "Terms & Condition":
+        router.push("/terms");
+        break;
+      case "Privacy Policy":
+        router.push("/privacy-policy");
+        break;
+      case "FAQ":
+        router.push("/faq");
+        break;
+      default:
+        console.log(`Navigate to ${item}`);
     }
   };
 
@@ -178,7 +197,11 @@ const ProfileScreen = () => {
             <Text style={styles.profileName}>John Doe</Text>
             <Text style={styles.profilePhone}>+1 (555) 123-4567</Text>
           </View>
-          <TouchableOpacity style={styles.editButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.editButton}
+            activeOpacity={0.8}
+            onPress={() => router.push("/edit-profile")}
+          >
             <Feather name="edit-2" size={18} color={Colors.gray500} />
           </TouchableOpacity>
         </View>
@@ -192,19 +215,24 @@ const ProfileScreen = () => {
           />
           <MenuItem
             icon="heart"
-            label="Favorites"
-            onPress={() => handleMenuPress("Favorites")}
+            label="Favorite Deals"
+            onPress={() => handleMenuPress("Favorite Deals")}
           />
           <MenuItem
-            icon="settings"
-            label="Settings"
-            onPress={() => handleMenuPress("Settings")}
+            icon="bell"
+            label="Notifications"
+            onPress={() => router.push("/notification-settings")}
             isLast
           />
         </View>
 
         {/* Menu Section 2 */}
         <View style={styles.menuCard}>
+          <MenuItem
+            icon="info"
+            label="About Us"
+            onPress={() => handleMenuPress("About Us")}
+          />
           <MenuItem
             icon="help-circle"
             label="Contact Us"
@@ -221,9 +249,9 @@ const ProfileScreen = () => {
             onPress={() => handleMenuPress("Privacy Policy")}
           />
           <MenuItem
-            icon="info"
-            label="Get Help"
-            onPress={() => handleMenuPress("Get Help")}
+            icon="help-circle"
+            label="FAQ"
+            onPress={() => handleMenuPress("FAQ")}
           />
           <MenuItem
             icon="log-out"

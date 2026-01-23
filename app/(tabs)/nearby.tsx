@@ -1,29 +1,30 @@
 import {
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
-    useFonts as useManropeFonts,
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-    Quicksand_600SemiBold,
-    Quicksand_700Bold,
-    useFonts as useQuicksandFonts,
+  Quicksand_600SemiBold,
+  Quicksand_700Bold,
+  useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Animated,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../../constants/theme";
@@ -96,6 +97,7 @@ const radiusOptions = [
 ];
 
 const NearbyScreen = () => {
+  const router = useRouter();
   const [selectedRadius, setSelectedRadius] = useState(1000);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedMerchant, setSelectedMerchant] =
@@ -583,6 +585,7 @@ const NearbyScreen = () => {
             <TouchableOpacity
               style={styles.viewDealsButton}
               activeOpacity={0.8}
+              onPress={() => router.push(`/merchant/${selectedMerchant.id}`)}
             >
               <Text style={styles.viewDealsButtonText}>View Deals</Text>
               <Feather name="arrow-right" size={16} color={Colors.white} />
