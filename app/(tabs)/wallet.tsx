@@ -329,6 +329,7 @@ const WalletScreen = () => {
               <TouchableOpacity
                 style={styles.upgradeButtonCompact}
                 activeOpacity={0.8}
+                onPress={() => router.push("/packages")}
               >
                 <Text style={styles.upgradeButtonTextCompact}>Upgrade</Text>
               </TouchableOpacity>

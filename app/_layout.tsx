@@ -48,6 +48,11 @@ export default function RootLayout() {
             name="coupon-detail/[id]"
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="packages" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="package-success"
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="modal"
             options={{ presentation: "modal", title: "Modal" }}

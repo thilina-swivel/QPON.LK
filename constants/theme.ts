@@ -28,6 +28,12 @@ export const Colors = {
   greenLight: "#BAFE7E",
   greenDark: "#85CB48",
 
+  // Status Colors
+  success: "#10B981",
+  successLight: "rgba(16, 185, 129, 0.1)",
+  error: "#EF4444",
+  errorLight: "rgba(239, 68, 68, 0.1)",
+
   // Neutral Colors
   white: "#FFFFFF",
   black: "#000000",
