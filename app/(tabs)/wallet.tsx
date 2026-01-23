@@ -207,6 +207,13 @@ const WalletScreen = () => {
     </TouchableOpacity>
   );
 
+  const handleCouponPress = (item: CouponItem) => {
+    router.push({
+      pathname: "/coupon-detail/[id]",
+      params: { id: item.id.toString(), status: item.status },
+    });
+  };
+
   const renderCouponCard = ({ item }: { item: CouponItem }) => (
     <Animated.View
       style={[
@@ -217,7 +224,10 @@ const WalletScreen = () => {
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.9}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => handleCouponPress(item)}
+      >
         <View style={styles.couponCardContent}>
           <Image source={{ uri: item.image }} style={styles.couponImage} />
           <View style={styles.couponInfo}>
