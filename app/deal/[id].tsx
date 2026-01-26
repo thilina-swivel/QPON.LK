@@ -53,9 +53,32 @@ const getDealById = (id: string) => ({
   soldCount: 347,
   remainingCount: 153,
   expirationDate: "2026-02-15",
-  validTimeStart: "5:00 PM",
-  validTimeEnd: "9:00 PM",
-  validDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+  validityDates: [
+    {
+      date: "2026-02-03",
+      day: "Mon",
+      startTime: "4:00 PM",
+      endTime: "6:00 PM",
+    },
+    {
+      date: "2026-02-04",
+      day: "Tue",
+      startTime: "5:00 PM",
+      endTime: "7:00 PM",
+    },
+    {
+      date: "2026-02-10",
+      day: "Mon",
+      startTime: "4:00 PM",
+      endTime: "6:00 PM",
+    },
+    {
+      date: "2026-02-11",
+      day: "Tue",
+      startTime: "5:00 PM",
+      endTime: "7:00 PM",
+    },
+  ],
   description:
     "Indulge in our signature gourmet burger combo featuring a juicy 200g premium beef patty, topped with aged cheddar, caramelized onions, crispy bacon, fresh lettuce, and our secret house sauce. Served with golden crispy fries and a refreshing drink of your choice.\n\nPerfect for food enthusiasts looking for an exceptional dining experience at an unbeatable price.",
   termsAndConditions: [
@@ -98,6 +121,11 @@ export default function DealDetailScreen() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const confirmModalAnim = useRef(new Animated.Value(0)).current;
   const confirmSlideAnim = useRef(new Animated.Value(300)).current;
+
+  // Validity modal state
+  const [showValidityModal, setShowValidityModal] = useState(false);
+  const validityModalAnim = useRef(new Animated.Value(0)).current;
+  const validitySlideAnim = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
     // Entry animations
@@ -241,6 +269,40 @@ export default function DealDetailScreen() {
     });
   };
 
+  const openValidityModal = () => {
+    setShowValidityModal(true);
+    Animated.parallel([
+      Animated.timing(validityModalAnim, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.spring(validitySlideAnim, {
+        toValue: 0,
+        tension: 65,
+        friction: 10,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const closeValidityModal = () => {
+    Animated.parallel([
+      Animated.timing(validityModalAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(validitySlideAnim, {
+        toValue: 300,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowValidityModal(false);
+    });
+  };
+
   const handleConfirmPurchase = () => {
     closeConfirmModal();
     // Generate coupon code
@@ -259,6 +321,15 @@ export default function DealDetailScreen() {
   };
 
   const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const formatValidityDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -461,21 +532,25 @@ export default function DealDetailScreen() {
               </Text>
             </View>
 
-            {/* Validity Section - Minimal */}
-            <View style={styles.validityRow}>
-              <View style={styles.validityChip}>
-                <Feather name="calendar" size={14} color={Colors.orange} />
-                <Text style={styles.validityChipText}>
-                  Expires {formatDate(deal.expirationDate)}
-                </Text>
+            {/* Validity Section - Clickable Link */}
+            <TouchableOpacity
+              style={styles.validityLinkContainer}
+              onPress={openValidityModal}
+              activeOpacity={0.7}
+            >
+              <View style={styles.validityLinkLeft}>
+                <Feather name="calendar" size={18} color={Colors.orange} />
+                <View>
+                  <Text style={styles.validityLinkTitle}>
+                    Deal Validity Period
+                  </Text>
+                  <Text style={styles.validityLinkSubtitle}>
+                    {deal.validityDates.length} available time slots
+                  </Text>
+                </View>
               </View>
-              <View style={styles.validityChip}>
-                <Feather name="clock" size={14} color={Colors.orange} />
-                <Text style={styles.validityChipText}>
-                  {deal.validTimeStart} – {deal.validTimeEnd}
-                </Text>
-              </View>
-            </View>
+              <Feather name="chevron-right" size={20} color={Colors.gray400} />
+            </TouchableOpacity>
           </View>
 
           {/* Description Card */}
@@ -608,7 +683,7 @@ export default function DealDetailScreen() {
               <View style={styles.modalValidityItem}>
                 <Feather name="clock" size={16} color={Colors.orange} />
                 <Text style={styles.modalValidityText}>
-                  {deal.validTimeStart} – {deal.validTimeEnd}
+                  {deal.validityDates.length} time slots available
                 </Text>
               </View>
               <View style={styles.modalValidityItem}>
@@ -653,6 +728,97 @@ export default function DealDetailScreen() {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
+
+      {/* Validity Period Modal */}
+      <Modal
+        visible={showValidityModal}
+        transparent
+        animationType="none"
+        onRequestClose={closeValidityModal}
+      >
+        <Animated.View
+          style={[styles.modalOverlay, { opacity: validityModalAnim }]}
+        >
+          <TouchableOpacity
+            style={StyleSheet.absoluteFillObject}
+            activeOpacity={1}
+            onPress={closeValidityModal}
+          />
+          <Animated.View
+            style={[
+              styles.validityModal,
+              {
+                transform: [{ translateY: validitySlideAnim }],
+                paddingBottom: Math.max(34, insets.bottom + 20),
+              },
+            ]}
+          >
+            {/* Modal Header */}
+            <View style={styles.modalHandle} />
+            <View style={styles.validityModalHeader}>
+              <Text style={styles.validityModalTitle}>
+                Deal Validity Period
+              </Text>
+              <TouchableOpacity
+                style={styles.validityCloseButton}
+                onPress={closeValidityModal}
+                activeOpacity={0.7}
+              >
+                <Feather name="x" size={20} color={Colors.gray600} />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.validityModalSubtitle}>
+              This deal is available on the following dates and times
+            </Text>
+
+            {/* Validity List */}
+            <ScrollView
+              style={styles.validityModalList}
+              showsVerticalScrollIndicator={false}
+            >
+              {deal.validityDates.map((validity, index) => (
+                <View key={index} style={styles.validityModalItem}>
+                  <View style={styles.validityModalDateRow}>
+                    <View style={styles.validityModalIconContainer}>
+                      <Feather
+                        name="calendar"
+                        size={16}
+                        color={Colors.orange}
+                      />
+                    </View>
+                    <Text style={styles.validityModalDate}>
+                      {formatValidityDate(validity.date)} ({validity.day})
+                    </Text>
+                  </View>
+                  <View style={styles.validityModalTimeRow}>
+                    <Feather name="clock" size={14} color={Colors.gray500} />
+                    <Text style={styles.validityModalTime}>
+                      {validity.startTime} – {validity.endTime}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+
+            {/* Expiry Notice */}
+            <View style={styles.validityModalExpiry}>
+              <Feather name="alert-circle" size={16} color={Colors.orange} />
+              <Text style={styles.validityModalExpiryText}>
+                Offer expires {formatDate(deal.expirationDate)}
+              </Text>
+            </View>
+
+            {/* Got It Button */}
+            <TouchableOpacity
+              style={styles.validityGotItButton}
+              onPress={closeValidityModal}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.validityGotItText}>Got It</Text>
+            </TouchableOpacity>
           </Animated.View>
         </Animated.View>
       </Modal>
@@ -951,35 +1117,137 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: "right",
   },
-  validityRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  validityChip: {
+  // Validity Link Styles
+  validityLinkContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    justifyContent: "space-between",
     backgroundColor: Colors.gray100,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 4,
   },
-  validityChipText: {
-    color: Colors.gray600,
-    fontSize: 12,
-    fontFamily: Fonts.body.medium,
+  validityLinkLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
-  dayBadgeActive: {
-    backgroundColor: "rgba(255,90,0,0.12)",
-  },
-  dayText: {
-    color: Colors.gray400,
-    fontSize: 10,
-    fontFamily: "Manrope_600SemiBold",
-  },
-  dayTextActive: {
+  validityLinkTitle: {
     color: Colors.orange,
+    fontSize: 14,
+    fontFamily: Fonts.body.semiBold,
+  },
+  validityLinkSubtitle: {
+    color: Colors.gray500,
+    fontSize: 12,
+    fontFamily: Fonts.body.regular,
+    marginTop: 2,
+  },
+  // Validity Modal Styles
+  validityModal: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    maxHeight: "80%",
+  },
+  validityModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  validityModalTitle: {
+    fontFamily: Fonts.heading.bold,
+    fontSize: 20,
+    color: Colors.deepNavy,
+  },
+  validityCloseButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.gray100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  validityModalSubtitle: {
+    fontFamily: Fonts.body.regular,
+    fontSize: 13,
+    color: Colors.gray500,
+    marginBottom: 20,
+  },
+  validityModalList: {
+    maxHeight: 300,
+  },
+  validityModalItem: {
+    backgroundColor: Colors.gray100,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 10,
+  },
+  validityModalDateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 8,
+  },
+  validityModalIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,90,0,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  validityModalDate: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 15,
+    color: Colors.deepNavy,
+  },
+  validityModalTimeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginLeft: 42,
+  },
+  validityModalTime: {
+    fontFamily: Fonts.body.medium,
+    fontSize: 13,
+    color: Colors.gray600,
+  },
+  validityModalExpiry: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(255,90,0,0.08)",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  validityModalExpiryText: {
+    fontFamily: Fonts.body.medium,
+    fontSize: 13,
+    color: Colors.orange,
+  },
+  validityGotItButton: {
+    backgroundColor: Colors.deepNavy,
+    paddingVertical: 16,
+    borderRadius: 28,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  validityGotItText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 15,
+    color: Colors.white,
   },
   sectionCard: {
     backgroundColor: Colors.white,
