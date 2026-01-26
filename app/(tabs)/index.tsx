@@ -1,14 +1,14 @@
 import {
-  Manrope_400Regular,
-  Manrope_500Medium,
-  Manrope_600SemiBold,
-  Manrope_700Bold,
-  useFonts as useManropeFonts,
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-  Quicksand_600SemiBold,
-  Quicksand_700Bold,
-  useFonts as useQuicksandFonts,
+    Quicksand_600SemiBold,
+    Quicksand_700Bold,
+    useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,15 +16,15 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  FlatList,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    FlatList,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FavoriteButton from "../../components/FavoriteButton";
@@ -376,18 +376,22 @@ const HomeScreen = () => {
         style={styles.expiringFavorite}
       />
       <View style={styles.expiringInfo}>
-        <Text style={styles.expiringName}>{item.name}</Text>
+        <Text style={styles.expiringName} numberOfLines={2}>
+          {item.name}
+        </Text>
         <View style={styles.expiringTimeRow}>
-          <Feather name="clock" size={12} color={Colors.orange} />
-          <Text style={styles.expiringTime}>EXPIRING IN {item.expiresIn}</Text>
+          <Feather name="clock" size={14} color={Colors.orange} />
+          <Text style={styles.expiringTime}>Expires in {item.expiresIn}</Text>
         </View>
         <View style={styles.expiringPriceRow}>
-          <Text style={styles.expiringPrice}>
-            LKR {item.price.toLocaleString()}
-          </Text>
-          <Text style={styles.expiringOriginal}>
-            LKR {item.originalPrice.toLocaleString()}
-          </Text>
+          <View style={styles.expiringPriceSection}>
+            <Text style={styles.expiringPrice}>
+              LKR {item.price.toLocaleString()}
+            </Text>
+            <Text style={styles.expiringOriginal}>
+              LKR {item.originalPrice.toLocaleString()}
+            </Text>
+          </View>
           <View style={styles.expiringDiscountBadge}>
             <Text style={styles.expiringDiscountText}>
               {item.discount}% OFF
@@ -949,7 +953,7 @@ const styles = StyleSheet.create({
   },
   spotlightCard: {
     width: width - 56,
-    height: 200,
+    height: 160,
     borderRadius: 20,
     overflow: "hidden",
     marginRight: 16,
@@ -1015,7 +1019,7 @@ const styles = StyleSheet.create({
   },
   dealImage: {
     width: "100%",
-    height: 160,
+    height: 120,
   },
   favoriteButton: {
     position: "absolute",
@@ -1101,21 +1105,23 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: "row",
     marginBottom: 12,
+    gap: 12,
     shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
   },
   expiringImage: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     borderRadius: 12,
+    backgroundColor: Colors.gray200,
   },
   expiringFavorite: {
     position: "absolute",
-    top: 18,
-    left: 68,
+    top: 12,
+    right: 12,
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -1130,40 +1136,41 @@ const styles = StyleSheet.create({
   },
   expiringInfo: {
     flex: 1,
-    marginLeft: 14,
-    justifyContent: "center",
   },
   expiringName: {
     fontFamily: Fonts.heading.bold,
-    fontSize: 16,
+    fontSize: 15,
     color: Colors.deepNavy,
+    marginBottom: 6,
   },
   expiringTimeRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
+    marginBottom: 6,
     gap: 4,
   },
   expiringTime: {
     fontFamily: Fonts.body.medium,
-    fontSize: 11,
+    fontSize: 12,
     color: Colors.orange,
-    letterSpacing: 0.3,
   },
   expiringPriceRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 8,
-    gap: 8,
+  },
+  expiringPriceSection: {
+    flex: 1,
   },
   expiringPrice: {
     fontFamily: Fonts.heading.bold,
-    fontSize: 17,
+    fontSize: 16,
     color: Colors.orange,
+    marginBottom: 2,
   },
   expiringOriginal: {
     fontFamily: Fonts.body.regular,
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.gray400,
     textDecorationLine: "line-through",
   },
@@ -1171,7 +1178,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.green,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   expiringDiscountText: {
     fontFamily: Fonts.body.bold,
@@ -1202,7 +1209,7 @@ const styles = StyleSheet.create({
   },
   recommendedImage: {
     width: "100%",
-    height: 120,
+    height: 100,
   },
   recommendedFavorite: {
     position: "absolute",

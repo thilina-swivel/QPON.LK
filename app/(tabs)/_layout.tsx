@@ -1,12 +1,13 @@
 import {
-  Manrope_500Medium,
-  Manrope_600SemiBold,
-  useFonts as useManropeFonts,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Colors, Fonts } from "@/constants/theme";
 
@@ -39,10 +40,15 @@ export default function TabLayout() {
     Manrope_500Medium,
     Manrope_600SemiBold,
   });
+  const insets = useSafeAreaInsets();
 
   if (!manropeLoaded) {
     return null;
   }
+
+  const bottomPadding =
+    Platform.OS === "ios" ? 28 : Math.max(insets.bottom, 12);
+  const tabBarHeight = Platform.OS === "ios" ? 88 : 58 + bottomPadding;
 
   return (
     <Tabs
@@ -50,7 +56,10 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors.orange,
         tabBarInactiveTintColor: Colors.gray500,
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          { height: tabBarHeight, paddingBottom: bottomPadding },
+        ],
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarItemStyle: styles.tabBarItem,
       }}
@@ -113,9 +122,7 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: Colors.white,
     borderTopWidth: 0,
-    height: Platform.OS === "ios" ? 88 : 70,
     paddingTop: 8,
-    paddingBottom: Platform.OS === "ios" ? 28 : 12,
     shadowColor: Colors.black,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.08,
