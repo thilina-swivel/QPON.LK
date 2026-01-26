@@ -46,9 +46,11 @@ export default function TabLayout() {
     return null;
   }
 
+  // Use a higher minimum for Android to account for devices with software navigation bars
+  // Some Android devices (like ZTE) may not report correct insets for the navigation bar
   const bottomPadding =
-    Platform.OS === "ios" ? 28 : Math.max(insets.bottom, 12);
-  const tabBarHeight = Platform.OS === "ios" ? 88 : 58 + bottomPadding;
+    Platform.OS === "ios" ? 28 : Math.max(insets.bottom, 20);
+  const tabBarHeight = Platform.OS === "ios" ? 88 : 64 + bottomPadding;
 
   return (
     <Tabs
