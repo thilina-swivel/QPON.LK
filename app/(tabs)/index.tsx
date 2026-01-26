@@ -29,6 +29,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import FavoriteButton from "../../components/FavoriteButton";
 import { Colors, Fonts } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.7;
@@ -201,6 +202,7 @@ const SPOTLIGHT_INTERVAL = 4000;
 
 const HomeScreen = () => {
   const router = useRouter();
+  const { isGuest, showAuthPrompt } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState(1);
   const [currentSpotlight, setCurrentSpotlight] = useState(0);
   const spotlightDirection = useRef(1); // 1 for forward, -1 for backward
@@ -479,8 +481,10 @@ const HomeScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.welcomeText}>Welcome back,</Text>
-            <Text style={styles.userName}>Thilina</Text>
+            <Text style={styles.welcomeText}>
+              {isGuest ? "Hello," : "Welcome back,"}
+            </Text>
+            <Text style={styles.userName}>{isGuest ? "Guest" : "Thilina"}</Text>
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity
@@ -496,12 +500,31 @@ const HomeScreen = () => {
               activeOpacity={0.7}
             >
               <Feather name="bell" size={22} color={Colors.deepNavy} />
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>3</Text>
-              </View>
+              {!isGuest && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>3</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Guest Sign In Banner */}
+        {isGuest && (
+          <TouchableOpacity
+            style={styles.guestBanner}
+            activeOpacity={0.9}
+            onPress={() => router.push("/signin")}
+          >
+            <View style={styles.guestBannerContent}>
+              <Feather name="user" size={18} color={Colors.orange} />
+              <Text style={styles.guestBannerText}>
+                Sign in for a better experience
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={Colors.orange} />
+          </TouchableOpacity>
+        )}
 
         {/* Savings Card */}
         <LinearGradient
@@ -769,6 +792,29 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: "row",
     gap: 12,
+  },
+  guestBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: `${Colors.orange}10`,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: `${Colors.orange}30`,
+  },
+  guestBannerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  guestBannerText: {
+    fontFamily: Fonts.body.medium,
+    fontSize: 14,
+    color: Colors.orange,
   },
   iconButton: {
     width: 44,

@@ -1,37 +1,39 @@
 import {
-  Manrope_400Regular,
-  Manrope_500Medium,
-  Manrope_600SemiBold,
-  Manrope_700Bold,
-  useFonts as useManropeFonts,
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-  Quicksand_600SemiBold,
-  Quicksand_700Bold,
-  useFonts as useQuicksandFonts,
+    Quicksand_600SemiBold,
+    Quicksand_700Bold,
+    useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../constants/theme";
+import { useAuth } from "../context/AuthContext";
 
 const { width } = Dimensions.get("window");
 const OTP_LENGTH = 4;
 
 const OTPVerificationScreen = () => {
   const router = useRouter();
+  const { login } = useAuth();
   const params = useLocalSearchParams();
   const phoneNumber = params.phoneNumber as string;
 
@@ -216,6 +218,13 @@ const OTPVerificationScreen = () => {
       if (otpValue.length === 4) {
         setSuccess(true);
         animateSuccess();
+        // Log in the user with mock data
+        login({
+          id: "1",
+          name: "Thilina",
+          email: "thilina@example.com",
+          phone: phoneNumber,
+        });
         setTimeout(() => {
           router.replace("/(tabs)");
         }, 1500);

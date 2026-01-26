@@ -22,6 +22,7 @@ import {
     SafeAreaView,
     useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -75,6 +76,7 @@ export default function DealDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { isGuest, showAuthPrompt } = useAuth();
 
   const deal = getDealById(id || "1");
   const isFav = isFavorite(deal.id);
@@ -185,6 +187,10 @@ export default function DealDetailScreen() {
   };
 
   const handleBuyPress = () => {
+    if (isGuest) {
+      showAuthPrompt("purchase this deal");
+      return;
+    }
     Animated.sequence([
       Animated.timing(buttonScale, {
         toValue: 0.95,

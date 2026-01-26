@@ -1,14 +1,14 @@
 import {
-  Manrope_400Regular,
-  Manrope_500Medium,
-  Manrope_600SemiBold,
-  Manrope_700Bold,
-  useFonts as useManropeFonts,
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-  Quicksand_600SemiBold,
-  Quicksand_700Bold,
-  useFonts as useQuicksandFonts,
+    Quicksand_600SemiBold,
+    Quicksand_700Bold,
+    useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,18 +16,19 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  FlatList,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    FlatList,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
 
 const { width } = Dimensions.get("window");
 
@@ -124,6 +125,7 @@ const expiringSoonCoupons: CouponItem[] = [
 
 const WalletScreen = () => {
   const router = useRouter();
+  const { isGuest } = useAuth();
 
   const [quicksandLoaded] = useQuicksandFonts({
     Quicksand_600SemiBold,
@@ -169,6 +171,39 @@ const WalletScreen = () => {
       <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
       </View>
+    );
+  }
+
+  // Guest View
+  if (isGuest) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <StatusBar style="dark" />
+        <View style={styles.guestContainer}>
+          <View style={styles.guestIconContainer}>
+            <Feather name="credit-card" size={32} color={Colors.orange} />
+          </View>
+          <Text style={styles.guestTitle}>Sign In to Access Wallet</Text>
+          <Text style={styles.guestSubtitle}>
+            Create an account or sign in to view your coupons, track savings,
+            and manage your wallet.
+          </Text>
+          <TouchableOpacity
+            style={styles.guestSignInButton}
+            onPress={() => router.push("/signin")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.guestSignInButtonText}>Sign In</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.guestRegisterButton}
+            onPress={() => router.push("/register")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.guestRegisterButtonText}>Create Account</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -802,6 +837,72 @@ const styles = StyleSheet.create({
 
   bottomPadding: {
     height: 20,
+  },
+  // Guest styles
+  guestContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  guestIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: Colors.gray100,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  guestTitle: {
+    fontFamily: Fonts.heading.bold,
+    fontSize: 22,
+    color: Colors.deepNavy,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  guestSubtitle: {
+    fontFamily: Fonts.body.regular,
+    fontSize: 15,
+    color: Colors.gray600,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  guestSignInButton: {
+    width: "100%",
+    backgroundColor: Colors.orange,
+    paddingVertical: 16,
+    borderRadius: 28,
+    alignItems: "center",
+    marginBottom: 12,
+    shadowColor: Colors.orange,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  guestSignInButtonText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 15,
+    color: Colors.white,
+  },
+  guestRegisterButton: {
+    width: "100%",
+    backgroundColor: Colors.deepNavy,
+    paddingVertical: 16,
+    borderRadius: 28,
+    alignItems: "center",
+    shadowColor: Colors.deepNavy,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  guestRegisterButtonText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 15,
+    color: Colors.white,
   },
 });
 

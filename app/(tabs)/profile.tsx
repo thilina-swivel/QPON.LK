@@ -1,29 +1,30 @@
 import {
-  Manrope_400Regular,
-  Manrope_500Medium,
-  Manrope_600SemiBold,
-  useFonts as useManropeFonts,
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    useFonts as useManropeFonts,
 } from "@expo-google-fonts/manrope";
 import {
-  Quicksand_700Bold,
-  useFonts as useQuicksandFonts,
+    Quicksand_700Bold,
+    useFonts as useQuicksandFonts,
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useRef, useState } from "react";
 import {
-  Animated,
-  Image,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Image,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
 
 type MenuItemProps = {
   icon: keyof typeof Feather.glyphMap;
@@ -72,6 +73,7 @@ const MenuItem = ({ icon, label, onPress, isLast }: MenuItemProps) => {
 
 const ProfileScreen = () => {
   const router = useRouter();
+  const { isGuest } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const modalScale = useRef(new Animated.Value(0.8)).current;
@@ -89,6 +91,84 @@ const ProfileScreen = () => {
 
   if (!quicksandLoaded || !manropeLoaded) {
     return null;
+  }
+
+  // Guest View
+  if (isGuest) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <StatusBar style="dark" />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Profile</Text>
+          </View>
+
+          {/* Guest Sign In Card */}
+          <View style={styles.guestSignInCard}>
+            <View style={styles.guestIconContainer}>
+              <Feather name="user" size={32} color={Colors.orange} />
+            </View>
+            <Text style={styles.guestCardTitle}>Sign In for Full Access</Text>
+            <Text style={styles.guestCardSubtitle}>
+              Create an account to manage your profile and access all features.
+            </Text>
+            <View style={styles.guestButtonsRow}>
+              <TouchableOpacity
+                style={styles.guestSignInButtonSmall}
+                onPress={() => router.push("/signin")}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.guestSignInButtonText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.guestRegisterButtonSmall}
+                onPress={() => router.push("/register")}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.guestRegisterButtonText}>Register</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Menu Section for Guests */}
+          <View style={styles.menuCard}>
+            <MenuItem
+              icon="info"
+              label="About Us"
+              onPress={() => router.push("/about-us")}
+            />
+            <MenuItem
+              icon="help-circle"
+              label="Contact Us"
+              onPress={() => router.push("/contact-us")}
+            />
+            <MenuItem
+              icon="file-text"
+              label="Terms & Condition"
+              onPress={() => router.push("/terms")}
+            />
+            <MenuItem
+              icon="shield"
+              label="Privacy Policy"
+              onPress={() => router.push("/privacy-policy")}
+            />
+            <MenuItem
+              icon="help-circle"
+              label="FAQ"
+              onPress={() => router.push("/faq")}
+              isLast
+            />
+          </View>
+
+          {/* Version */}
+          <Text style={styles.versionText}>Version 1.0.0</Text>
+        </ScrollView>
+      </SafeAreaView>
+    );
   }
 
   const openLogoutModal = () => {
@@ -549,6 +629,83 @@ const styles = StyleSheet.create({
   },
   loadingDot3: {
     opacity: 1,
+  },
+  // Guest styles
+  guestSignInCard: {
+    backgroundColor: Colors.white,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  guestIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.gray100,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  guestCardTitle: {
+    fontFamily: Fonts.heading.bold,
+    fontSize: 18,
+    color: Colors.deepNavy,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  guestCardSubtitle: {
+    fontFamily: Fonts.body.regular,
+    fontSize: 14,
+    color: Colors.gray600,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  guestButtonsRow: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+  },
+  guestSignInButtonSmall: {
+    flex: 1,
+    backgroundColor: Colors.orange,
+    paddingVertical: 14,
+    borderRadius: 28,
+    alignItems: "center",
+    shadowColor: Colors.orange,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  guestSignInButtonText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 14,
+    color: Colors.white,
+  },
+  guestRegisterButtonSmall: {
+    flex: 1,
+    backgroundColor: Colors.deepNavy,
+    paddingVertical: 14,
+    borderRadius: 28,
+    alignItems: "center",
+    shadowColor: Colors.deepNavy,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  guestRegisterButtonText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 14,
+    color: Colors.white,
   },
 });
 

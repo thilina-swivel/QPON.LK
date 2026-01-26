@@ -1,30 +1,31 @@
 import {
-  Manrope_400Regular,
-  Manrope_500Medium,
-  Manrope_600SemiBold,
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
 } from "@expo-google-fonts/manrope";
 import {
-  Quicksand_600SemiBold,
-  Quicksand_700Bold,
+    Quicksand_600SemiBold,
+    Quicksand_700Bold,
 } from "@expo-google-fonts/quicksand";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    Image,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors, Fonts } from "../constants/theme";
+import { useAuth } from "../context/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -70,6 +71,7 @@ const AUTO_SCROLL_INTERVAL = 4000; // 4 seconds
 
 const WelcomeScreen = () => {
   const router = useRouter();
+  const { loginAsGuest } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -107,6 +109,7 @@ const WelcomeScreen = () => {
   }, [scrollToNextSlide]);
 
   const handleExploreDeals = () => {
+    loginAsGuest();
     router.push("/(tabs)");
   };
 
