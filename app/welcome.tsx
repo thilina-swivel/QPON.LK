@@ -7,7 +7,6 @@ import {
     Quicksand_600SemiBold,
     Quicksand_700Bold,
 } from "@expo-google-fonts/quicksand";
-import { Feather } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -182,25 +181,6 @@ const WelcomeScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image
-            source={require("../assets/images/splash-icon.png")}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.headerTitle}>QPON</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.registerHeaderButton}
-          onPress={handleRegister}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.registerHeaderText}>Register</Text>
-        </TouchableOpacity>
-      </View>
-
       <View style={styles.slidesWrapper}>
         <FlatList
           ref={flatListRef}
@@ -236,8 +216,15 @@ const WelcomeScreen = () => {
           onPress={handleExploreDeals}
           activeOpacity={0.8}
         >
-          <Feather name="compass" size={20} color={Colors.white} />
-          <Text style={styles.exploreButtonText}>Explore Deals as Guest</Text>
+          <Text style={styles.exploreButtonText}>Explore Deals</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.registerButton}
+          onPress={handleRegister}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.registerButtonText}>Register</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -245,8 +232,7 @@ const WelcomeScreen = () => {
           onPress={handleSignIn}
           activeOpacity={0.8}
         >
-          <Feather name="log-in" size={20} color={Colors.white} />
-          <Text style={styles.signInButtonText}>Sign In to Continue</Text>
+          <Text style={styles.signInButtonText}>Sign In</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -263,59 +249,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.deepNavy,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: `${Colors.white}15`,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  headerLogo: {
-    width: 32,
-    height: 32,
-  },
-  headerTitle: {
-    fontFamily: Fonts.heading.bold,
-    fontSize: 22,
-    color: Colors.white,
-    letterSpacing: 1,
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  registerHeaderButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: Colors.white,
-  },
-  registerHeaderText: {
-    fontFamily: Fonts.body.semiBold,
-    fontSize: 14,
-    color: Colors.white,
-  },
-  signInHeaderButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: Colors.white,
-  },
-  signInHeaderText: {
-    fontFamily: Fonts.body.semiBold,
-    fontSize: 14,
-    color: Colors.white,
   },
   slidesWrapper: {
     flex: 1,
@@ -381,10 +314,8 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 24,
     borderRadius: 28,
-    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 10,
     shadowColor: Colors.orange,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
@@ -396,6 +327,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.white,
   },
+  registerButton: {
+    borderWidth: 1.5,
+    borderColor: Colors.white,
+    backgroundColor: "transparent",
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  registerButtonText: {
+    fontFamily: Fonts.body.bold,
+    fontSize: 16,
+    color: Colors.white,
+  },
   signInButton: {
     borderWidth: 1.5,
     borderColor: Colors.white,
@@ -403,10 +349,8 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 24,
     borderRadius: 28,
-    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 10,
   },
   signInButtonText: {
     fontFamily: Fonts.body.bold,

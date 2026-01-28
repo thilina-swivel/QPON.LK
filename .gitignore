@@ -41,3 +41,10 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Keystore files - do not commit!
+*.keystore
+*.jks
+keystore.properties
+android/keystore.properties
+android/app/*.keystore
