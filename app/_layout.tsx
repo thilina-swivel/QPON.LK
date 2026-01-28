@@ -74,6 +74,14 @@ export default function RootLayout() {
               name="notification-settings"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="notification-preferences"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="location-access"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="terms" options={{ headerShown: false }} />
             <Stack.Screen
               name="privacy-policy"

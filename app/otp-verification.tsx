@@ -226,7 +226,7 @@ const OTPVerificationScreen = () => {
           phone: phoneNumber,
         });
         setTimeout(() => {
-          router.replace("/(tabs)");
+          router.replace("/notification-preferences");
         }, 1500);
       } else {
         setError("Invalid OTP. Please try again.");

@@ -14,8 +14,18 @@
       }
     },
     "production": {
+      "distribution": "store",
       "android": {
-        "buildType": "apk"
+        "buildType": "aab"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
+      }
+    },
+    "testflight": {
+      "distribution": "store",
+      "ios": {
+        "buildConfiguration": "Release"
       }
     }
   },

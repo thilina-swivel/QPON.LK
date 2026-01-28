@@ -7,6 +7,7 @@ import {
     Quicksand_600SemiBold,
     Quicksand_700Bold,
 } from "@expo-google-fonts/quicksand";
+import { Feather } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -73,6 +74,9 @@ const WelcomeScreen = () => {
   const router = useRouter();
   const { loginAsGuest } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [scrollDirection, setScrollDirection] = useState<
+    "forward" | "backward"
+  >("forward");
   const flatListRef = useRef<FlatList>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -84,15 +88,36 @@ const WelcomeScreen = () => {
     Manrope_600SemiBold,
   });
 
-  // Auto-scroll functionality
+  // Auto-scroll functionality with back-and-forth behavior
   const scrollToNextSlide = useCallback(() => {
-    const nextSlide = (currentSlide + 1) % slides.length;
+    let nextSlide: number;
+    let newDirection = scrollDirection;
+
+    if (scrollDirection === "forward") {
+      if (currentSlide >= slides.length - 1) {
+        // At last slide, start going backward
+        nextSlide = currentSlide - 1;
+        newDirection = "backward";
+      } else {
+        nextSlide = currentSlide + 1;
+      }
+    } else {
+      if (currentSlide <= 0) {
+        // At first slide, start going forward
+        nextSlide = currentSlide + 1;
+        newDirection = "forward";
+      } else {
+        nextSlide = currentSlide - 1;
+      }
+    }
+
     flatListRef.current?.scrollToIndex({
       index: nextSlide,
       animated: true,
     });
     setCurrentSlide(nextSlide);
-  }, [currentSlide]);
+    setScrollDirection(newDirection);
+  }, [currentSlide, scrollDirection]);
 
   // Start auto-scroll timer
   useEffect(() => {
@@ -113,12 +138,12 @@ const WelcomeScreen = () => {
     router.push("/(tabs)");
   };
 
-  const handleRegister = () => {
-    router.push("/register");
-  };
-
   const handleSignIn = () => {
     router.push("/signin");
+  };
+
+  const handleRegister = () => {
+    router.push("/register");
   };
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -156,6 +181,26 @@ const WelcomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Image
+            source={require("../assets/images/splash-icon.png")}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>QPON</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.registerHeaderButton}
+          onPress={handleRegister}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.registerHeaderText}>Register</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.slidesWrapper}>
         <FlatList
           ref={flatListRef}
@@ -191,15 +236,8 @@ const WelcomeScreen = () => {
           onPress={handleExploreDeals}
           activeOpacity={0.8}
         >
-          <Text style={styles.exploreButtonText}>Explore Deals</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.registerButton}
-          onPress={handleRegister}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.registerButtonText}>Register</Text>
+          <Feather name="compass" size={20} color={Colors.white} />
+          <Text style={styles.exploreButtonText}>Explore Deals as Guest</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -207,7 +245,8 @@ const WelcomeScreen = () => {
           onPress={handleSignIn}
           activeOpacity={0.8}
         >
-          <Text style={styles.signInButtonText}>Sign In</Text>
+          <Feather name="log-in" size={20} color={Colors.white} />
+          <Text style={styles.signInButtonText}>Sign In to Continue</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -224,6 +263,59 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.deepNavy,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: `${Colors.white}15`,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  headerLogo: {
+    width: 32,
+    height: 32,
+  },
+  headerTitle: {
+    fontFamily: Fonts.heading.bold,
+    fontSize: 22,
+    color: Colors.white,
+    letterSpacing: 1,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  registerHeaderButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: Colors.white,
+  },
+  registerHeaderText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 14,
+    color: Colors.white,
+  },
+  signInHeaderButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: Colors.white,
+  },
+  signInHeaderText: {
+    fontFamily: Fonts.body.semiBold,
+    fontSize: 14,
+    color: Colors.white,
   },
   slidesWrapper: {
     flex: 1,
@@ -282,15 +374,17 @@ const styles = StyleSheet.create({
   buttonSection: {
     paddingHorizontal: 24,
     paddingBottom: 30,
-    gap: 12,
+    gap: 14,
   },
   exploreButton: {
     backgroundColor: Colors.orange,
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 24,
     borderRadius: 28,
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    gap: 10,
     shadowColor: Colors.orange,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
@@ -298,22 +392,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   exploreButtonText: {
-    fontFamily: Fonts.body.semiBold,
-    fontSize: 16,
-    color: Colors.white,
-  },
-  registerButton: {
-    borderWidth: 1.5,
-    borderColor: Colors.white,
-    backgroundColor: "transparent",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  registerButtonText: {
-    fontFamily: Fonts.body.semiBold,
+    fontFamily: Fonts.body.bold,
     fontSize: 16,
     color: Colors.white,
   },
@@ -321,14 +400,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: Colors.white,
     backgroundColor: "transparent",
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 24,
     borderRadius: 28,
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    gap: 10,
   },
   signInButtonText: {
-    fontFamily: Fonts.body.semiBold,
+    fontFamily: Fonts.body.bold,
     fontSize: 16,
     color: Colors.white,
   },
